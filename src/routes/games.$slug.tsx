@@ -76,7 +76,7 @@ function GameDetail() {
           <div className="mt-8">
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Features</h3>
             <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-              {game.features.map((f) => (
+              {game.features.map((f: string) => (
                 <li key={f} className="flex items-center gap-2 text-sm">
                   <span className="grid h-5 w-5 place-items-center rounded-full bg-gradient-brand text-white">
                     <Check className="!size-3" />
