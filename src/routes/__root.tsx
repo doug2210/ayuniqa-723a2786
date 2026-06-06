@@ -77,14 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "AYUNIQA" },
+      { name: "description", content: "We design, build and certify premium slot games." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "AYUNIQA" },
+      { property: "og:description", content: "We design, build and certify premium slot games." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "AYUNIQA" },
+      { name: "twitter:description", content: "We design, build and certify premium slot games." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/27c1f4c3-a894-4319-89b4-e7f0c1b57490/id-preview-640857c3--d41d0ac3-560d-4603-a7ac-5fe9e5a1ac1a.lovable.app-1780777293652.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/27c1f4c3-a894-4319-89b4-e7f0c1b57490/id-preview-640857c3--d41d0ac3-560d-4603-a7ac-5fe9e5a1ac1a.lovable.app-1780777293652.png" },
     ],
     links: [
       {
