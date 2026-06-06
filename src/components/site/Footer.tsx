@@ -28,9 +28,7 @@ export function Footer() {
           </p>
         </div>
       </div>
-      <div className="border-t border-border py-5 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Ayuniqa Studios. All rights reserved.
-      </div>
+      <Copyright />
     </footer>
   );
 }
