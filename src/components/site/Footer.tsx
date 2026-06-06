@@ -1,18 +1,12 @@
 import { Link } from "@tanstack/react-router";
+import logoAsset from "@/assets/ayuniqa-logo.png.asset.json";
 
 export function Footer() {
   return (
     <footer className="mt-24 border-t border-border bg-secondary/40">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-4 lg:px-8">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-brand text-white font-black">
-              R
-            </span>
-            <span className="text-lg font-extrabold">
-              Reel<span className="text-gradient-brand">Forge</span>
-            </span>
-          </div>
+          <img src={logoAsset.url} alt="Ayuniqa" className="h-9 w-auto" />
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
             Premium slot games engineered for operators worldwide.
           </p>
