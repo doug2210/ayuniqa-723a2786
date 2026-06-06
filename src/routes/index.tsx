@@ -89,21 +89,25 @@ const strengths = [
 function Strengths() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-      <div className="mb-12 max-w-2xl">
-        <h2 className="text-4xl font-black tracking-tight sm:text-5xl">
-          Built for serious <span className="text-gradient-brand">operators</span>.
-        </h2>
-        <p className="mt-3 text-muted-foreground">Everything you need to launch hit titles faster.</p>
-      </div>
+      <ScrollReveal animation="fade-up">
+        <div className="mb-12 max-w-2xl">
+          <h2 className="text-4xl font-black tracking-tight sm:text-5xl">
+            Built for serious <span className="text-gradient-brand">operators</span>.
+          </h2>
+          <p className="mt-3 text-muted-foreground">Everything you need to launch hit titles faster.</p>
+        </div>
+      </ScrollReveal>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {strengths.map((s) => (
-          <div key={s.title} className="group rounded-2xl border border-border bg-card p-6 shadow-card transition-smooth hover:-translate-y-1 hover:shadow-glow">
-            <div className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-brand text-white transition-smooth group-hover:scale-110">
-              <s.icon className="!size-5" />
+        {strengths.map((s, i) => (
+          <ScrollReveal key={s.title} animation="fade-up" delay={i * 100}>
+            <div className="group rounded-2xl border border-border bg-card p-6 shadow-card transition-smooth hover:-translate-y-1 hover:shadow-glow">
+              <div className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-brand text-white transition-smooth group-hover:scale-110">
+                <s.icon className="!size-5" />
+              </div>
+              <h3 className="mt-5 text-lg font-bold">{s.title}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">{s.body}</p>
             </div>
-            <h3 className="mt-5 text-lg font-bold">{s.title}</h3>
-            <p className="mt-1 text-sm text-muted-foreground">{s.body}</p>
-          </div>
+          </ScrollReveal>
         ))}
       </div>
     </section>
