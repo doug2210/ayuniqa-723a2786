@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import logoAsset from "@/assets/ayuniqa-logo.png.asset.json";
 
 export function Footer() {
