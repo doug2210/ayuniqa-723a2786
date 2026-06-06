@@ -10,10 +10,10 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact — ReelForge Studios" },
-      { name: "description", content: "Talk to ReelForge about partnership, integration, or new game commissions." },
-      { property: "og:title", content: "Contact — ReelForge Studios" },
-      { property: "og:description", content: "Talk to ReelForge about partnership or integration." },
+      { title: "Contact — Ayuniqa Studios" },
+      { name: "description", content: "Talk to Ayuniqa about partnership, integration, or new game commissions." },
+      { property: "og:title", content: "Contact — Ayuniqa Studios" },
+      { property: "og:description", content: "Talk to Ayuniqa about partnership or integration." },
     ],
   }),
   component: Contact,

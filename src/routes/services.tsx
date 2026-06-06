@@ -5,9 +5,9 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 export const Route = createFileRoute("/services")({
   head: () => ({
     meta: [
-      { title: "Services — ReelForge Studios" },
+      { title: "Services — Ayuniqa Studios" },
       { name: "description", content: "End-to-end slot game services: design, math, certification, integration." },
-      { property: "og:title", content: "Services — ReelForge Studios" },
+      { property: "og:title", content: "Services — Ayuniqa Studios" },
       { property: "og:description", content: "End-to-end slot game services." },
     ],
   }),

@@ -9,10 +9,10 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/games")({
   head: () => ({
     meta: [
-      { title: "Games — ReelForge Studios" },
-      { name: "description", content: "Browse the ReelForge portfolio of premium HTML5 slot games." },
-      { property: "og:title", content: "Games — ReelForge Studios" },
-      { property: "og:description", content: "Browse the ReelForge portfolio of premium HTML5 slot games." },
+      { title: "Games — Ayuniqa Studios" },
+      { name: "description", content: "Browse the Ayuniqa portfolio of premium HTML5 slot games." },
+      { property: "og:title", content: "Games — Ayuniqa Studios" },
+      { property: "og:description", content: "Browse the Ayuniqa portfolio of premium HTML5 slot games." },
     ],
   }),
   component: GamesPage,

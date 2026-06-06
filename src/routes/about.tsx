@@ -4,10 +4,10 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About — ReelForge Studios" },
-      { name: "description", content: "Meet the team behind ReelForge — artists, mathematicians, and engineers shipping premium slots." },
-      { property: "og:title", content: "About — ReelForge Studios" },
-      { property: "og:description", content: "Meet the team behind ReelForge." },
+      { title: "About — Ayuniqa Studios" },
+      { name: "description", content: "Meet the team behind Ayuniqa — artists, mathematicians, and engineers shipping premium slots." },
+      { property: "og:title", content: "About — Ayuniqa Studios" },
+      { property: "og:description", content: "Meet the team behind Ayuniqa." },
     ],
   }),
   component: About,
@@ -21,7 +21,7 @@ function About() {
           Crafted by <span className="text-gradient-brand">slot people</span>, for slot people.
         </h1>
         <p className="mt-6 text-lg text-muted-foreground">
-          ReelForge is a B2B iGaming studio founded in 2021 by veterans from some of the industry's biggest names. We obsess over the math, the moment of anticipation, and the polish that turns a spin into a story.
+          Ayuniqa is a B2B iGaming studio founded in 2021 by veterans from some of the industry's biggest names. We obsess over the math, the moment of anticipation, and the polish that turns a spin into a story.
         </p>
 
         <div className="mt-14 grid gap-6 sm:grid-cols-3">

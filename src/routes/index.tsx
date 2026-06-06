@@ -8,9 +8,9 @@ import { HeroStage } from "@/components/site/HeroStage";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "ReelForge — Premium iGaming Slots Studio" },
+      { title: "Ayuniqa — Premium iGaming Slots Studio" },
       { name: "description", content: "B2B slot games studio crafting premium, certified slot titles for operators worldwide." },
-      { property: "og:title", content: "ReelForge — Premium iGaming Slots Studio" },
+      { property: "og:title", content: "Ayuniqa — Premium iGaming Slots Studio" },
       { property: "og:description", content: "Premium, certified slot games for operators worldwide." },
     ],
   }),
@@ -116,7 +116,7 @@ function FeaturedGames() {
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="text-4xl font-black tracking-tight sm:text-5xl">Featured games</h2>
-            <p className="mt-2 text-muted-foreground">A taste of the ReelForge portfolio.</p>
+            <p className="mt-2 text-muted-foreground">A taste of the Ayuniqa portfolio.</p>
           </div>
           <Button asChild variant="outline">
             <Link to="/games">View all <ArrowRight /></Link>
@@ -191,7 +191,7 @@ function CTA() {
     <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
       <div className="relative overflow-hidden rounded-3xl bg-gradient-brand p-10 text-white shadow-glow sm:p-14">
         <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-[color:var(--brand-yellow)]/30 blur-3xl" />
-        <h2 className="max-w-2xl text-3xl font-black sm:text-5xl">Ready to add ReelForge titles to your lobby?</h2>
+        <h2 className="max-w-2xl text-3xl font-black sm:text-5xl">Ready to add Ayuniqa titles to your lobby?</h2>
         <p className="mt-3 max-w-xl text-white/90">Tell us about your platform — we'll get you live with a sample title in 14 days.</p>
         <div className="mt-7 flex flex-wrap gap-3">
           <Button asChild size="lg" variant="secondary">

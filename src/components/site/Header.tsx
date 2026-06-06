@@ -3,6 +3,7 @@ import { Menu, X, Lock } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import logoAsset from "@/assets/ayuniqa-logo.png.asset.json";
 
 const links = [
   { to: "/", label: "Home" },
@@ -18,12 +19,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-2">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-brand text-white font-black shadow-glow">
-            R
-          </span>
-          <span className="text-lg font-extrabold tracking-tight">
-            Reel<span className="text-gradient-brand">Forge</span>
-          </span>
+          <img src={logoAsset.url} alt="Ayuniqa" className="h-8 w-auto sm:h-9" />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">

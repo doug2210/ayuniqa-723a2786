@@ -158,7 +158,7 @@ export function HeroStage() {
         <div className="relative rounded-3xl border border-border bg-card/95 p-4 shadow-glow backdrop-blur">
           {/* Top brand bar */}
           <div className="mb-3 flex items-center justify-between rounded-xl bg-gradient-brand px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-white">
-            <span>ReelForge</span>
+            <span>Ayuniqa</span>
             <span className="rounded bg-white/20 px-1.5 py-0.5">Live</span>
           </div>
 

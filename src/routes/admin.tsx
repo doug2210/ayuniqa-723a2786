@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Admin — ReelForge Studios" },
+      { title: "Admin — Ayuniqa Studios" },
       { name: "description", content: "Internal admin panel for managing games, assets and partners." },
     ],
   }),

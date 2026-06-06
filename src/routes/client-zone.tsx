@@ -8,10 +8,10 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/client-zone")({
   head: () => ({
     meta: [
-      { title: "Client Zone — ReelForge Studios" },
-      { name: "description", content: "Secure portal for ReelForge partners. Approved access only." },
-      { property: "og:title", content: "Client Zone — ReelForge Studios" },
-      { property: "og:description", content: "Secure portal for approved ReelForge partners." },
+      { title: "Client Zone — Ayuniqa Studios" },
+      { name: "description", content: "Secure portal for Ayuniqa partners. Approved access only." },
+      { property: "og:title", content: "Client Zone — Ayuniqa Studios" },
+      { property: "og:description", content: "Secure portal for approved Ayuniqa partners." },
     ],
   }),
   component: ClientZone,
