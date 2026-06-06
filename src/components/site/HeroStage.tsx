@@ -148,7 +148,7 @@ export function HeroStage() {
 
       {/* Center reel stage */}
       <div
-        className="absolute left-1/2 top-1/2 w-[62%] -translate-x-1/2 -translate-y-1/2"
+        className="absolute left-1/2 top-1/2 w-[58%]"
         style={{
           transform: `translate(-50%, -50%) rotateX(${parallax.y * -8}deg) rotateY(${parallax.x * 10}deg)`,
           transition: "transform 0.25s ease-out",
@@ -215,13 +215,14 @@ export function HeroStage() {
           </div>
         </div>
 
-        {/* Floating chip badge */}
-        <div className="absolute -right-6 -top-6 rotate-[12deg] rounded-2xl bg-[color:var(--brand-yellow)] px-3 py-2 text-[10px] font-black uppercase tracking-widest text-[color:var(--brand-grey)] shadow-card animate-float">
-          Mega Win
-        </div>
-        <div className="absolute -bottom-5 -left-5 -rotate-6 rounded-full bg-gradient-brand px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-glow">
-          HTML5
-        </div>
+      </div>
+
+      {/* Floating chip badges — placed on the outer stage so they don't unbalance the centered reel box */}
+      <div className="pointer-events-none absolute left-[14%] top-[28%] z-20 -rotate-6 rounded-2xl bg-[color:var(--brand-yellow)] px-3 py-2 text-[10px] font-black uppercase tracking-widest text-[color:var(--brand-grey)] shadow-card animate-float">
+        Mega Win
+      </div>
+      <div className="pointer-events-none absolute right-[12%] bottom-[26%] z-20 rotate-6 rounded-full bg-gradient-brand px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-glow">
+        HTML5
       </div>
 
       {/* Floating icon symbols */}
