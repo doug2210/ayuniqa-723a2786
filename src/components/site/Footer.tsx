@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import logoAsset from "@/assets/ayuniqa-logo.png.asset.json";
 
 export function Footer() {
@@ -27,10 +28,18 @@ export function Footer() {
           </p>
         </div>
       </div>
-      <div className="border-t border-border py-5 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Ayuniqa Studios. All rights reserved.
-      </div>
+      <Copyright />
     </footer>
+  );
+}
+
+function Copyright() {
+  const [year, setYear] = useState(2026);
+  useEffect(() => setYear(new Date().getFullYear()), []);
+  return (
+    <div className="border-t border-border py-5 text-center text-xs text-muted-foreground">
+      © {year} Ayuniqa Studios. All rights reserved.
+    </div>
   );
 }
 

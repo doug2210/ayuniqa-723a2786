@@ -3,6 +3,7 @@ import { ArrowLeft, Check } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { games } from "@/lib/games-data";
+import { ScrollReveal } from "@/components/site/ScrollReveal";
 
 export const Route = createFileRoute("/games/$slug")({
   loader: ({ params }) => {
@@ -52,50 +53,54 @@ function GameDetail() {
         </Link>
       </section>
       <section className="mx-auto grid max-w-7xl items-start gap-12 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:px-8">
-        <div className="relative">
-          <div className="absolute inset-0 -z-10 rounded-[2.5rem] bg-gradient-warm opacity-30 blur-3xl" />
-          <img src={game.cover} alt={game.title} width={1024} height={1024} className="w-full rounded-3xl shadow-glow" />
-        </div>
-        <div>
-          <span className="inline-block rounded-full bg-[color:var(--brand-yellow)] px-3 py-1 text-xs font-bold text-[color:var(--brand-grey)]">
-            {game.category}
-          </span>
-          <h1 className="mt-4 text-5xl font-black leading-tight tracking-tight sm:text-6xl">
-            {game.title}
-          </h1>
-          <p className="mt-3 text-xl text-muted-foreground">{game.tagline}</p>
-          <p className="mt-6 text-foreground/80">{game.description}</p>
-
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Spec label="RTP" value={`${game.rtp}%`} />
-            <Spec label="Volatility" value={game.volatility} />
-            <Spec label="Reels" value={game.reels} />
-            <Spec label="Paylines" value={String(game.paylines)} />
+        <ScrollReveal animation="fade-right">
+          <div className="relative">
+            <div className="absolute inset-0 -z-10 rounded-[2.5rem] bg-gradient-warm opacity-30 blur-3xl" />
+            <img src={game.cover} alt={game.title} width={1024} height={1024} className="w-full rounded-3xl shadow-glow" />
           </div>
+        </ScrollReveal>
+        <ScrollReveal animation="fade-left" delay={150}>
+          <div>
+            <span className="inline-block rounded-full bg-[color:var(--brand-yellow)] px-3 py-1 text-xs font-bold text-[color:var(--brand-grey)]">
+              {game.category}
+            </span>
+            <h1 className="mt-4 text-5xl font-black leading-tight tracking-tight sm:text-6xl">
+              {game.title}
+            </h1>
+            <p className="mt-3 text-xl text-muted-foreground">{game.tagline}</p>
+            <p className="mt-6 text-foreground/80">{game.description}</p>
 
-          <div className="mt-8">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Features</h3>
-            <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-              {game.features.map((f: string) => (
-                <li key={f} className="flex items-center gap-2 text-sm">
-                  <span className="grid h-5 w-5 place-items-center rounded-full bg-gradient-brand text-white">
-                    <Check className="!size-3" />
-                  </span>
-                  {f}
-                </li>
-              ))}
-            </ul>
-          </div>
+            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <Spec label="RTP" value={`${game.rtp}%`} />
+              <Spec label="Volatility" value={game.volatility} />
+              <Spec label="Reels" value={game.reels} />
+              <Spec label="Paylines" value={String(game.paylines)} />
+            </div>
 
-          <div className="mt-10 flex flex-wrap gap-3">
-            <Button asChild size="lg" className="bg-gradient-brand text-white shadow-glow">
-              <Link to="/contact">Request demo</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link to="/client-zone">Get assets</Link>
-            </Button>
+            <div className="mt-8">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Features</h3>
+              <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                {game.features.map((f: string) => (
+                  <li key={f} className="flex items-center gap-2 text-sm">
+                    <span className="grid h-5 w-5 place-items-center rounded-full bg-gradient-brand text-white">
+                      <Check className="!size-3" />
+                    </span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="mt-10 flex flex-wrap gap-3">
+              <Button asChild size="lg" className="bg-gradient-brand text-white shadow-glow">
+                <Link to="/contact">Request demo</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link to="/client-zone">Get assets</Link>
+              </Button>
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
     </SiteLayout>
   );
