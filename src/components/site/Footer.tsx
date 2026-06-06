@@ -33,6 +33,16 @@ export function Footer() {
   );
 }
 
+function Copyright() {
+  const [year, setYear] = useState(2026);
+  useEffect(() => setYear(new Date().getFullYear()), []);
+  return (
+    <div className="border-t border-border py-5 text-center text-xs text-muted-foreground">
+      © {year} Ayuniqa Studios. All rights reserved.
+    </div>
+  );
+}
+
 function FooterCol({ title, links }: { title: string; links: { to: string; label: string }[] }) {
   return (
     <div>
