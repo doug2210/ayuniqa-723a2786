@@ -4,6 +4,7 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { games } from "@/lib/games-data";
 import { ScrollReveal } from "@/components/site/ScrollReveal";
+import { BorderBeam } from "@/components/magicui/border-beam";
 
 export const Route = createFileRoute("/games/$slug")({
   loader: ({ params }) => {
@@ -56,7 +57,10 @@ function GameDetail() {
         <ScrollReveal animation="fade-right">
           <div className="relative">
             <div className="absolute inset-0 -z-10 rounded-[2.5rem] bg-gradient-warm opacity-30 blur-3xl" />
-            <img src={game.cover} alt={game.title} width={1024} height={1024} className="w-full rounded-3xl shadow-glow" />
+            <div className="group relative overflow-hidden rounded-3xl">
+              <BorderBeam size={280} duration={9} />
+              <img src={game.cover} alt={game.title} width={1024} height={1024} className="w-full rounded-3xl shadow-glow transition-transform duration-700 group-hover:scale-[1.03]" />
+            </div>
           </div>
         </ScrollReveal>
         <ScrollReveal animation="fade-left" delay={150}>
@@ -92,7 +96,7 @@ function GameDetail() {
             </div>
 
             <div className="mt-10 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="bg-gradient-brand text-white shadow-glow">
+              <Button asChild size="lg" variant="shimmer">
                 <Link to="/contact">Request demo</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
