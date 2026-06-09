@@ -11,6 +11,9 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { SiteBackground } from "../components/site/SiteBackground";
+import { CursorGlow } from "../components/site/CursorGlow";
+import { PageTransition } from "../components/site/PageTransition";
 
 function NotFoundComponent() {
   return (
@@ -122,8 +125,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <SiteBackground />
+      <CursorGlow />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <PageTransition>
+        <Outlet />
+      </PageTransition>
     </QueryClientProvider>
   );
 }
