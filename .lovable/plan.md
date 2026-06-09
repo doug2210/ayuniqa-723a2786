@@ -1,42 +1,70 @@
-# Conectar Supabase existente (sbslimrugkzgnfacmlnm)
+# Animações "cassino imersivo" em todo o site
 
-## Passo 1 — Você conecta o Supabase no editor (ação manual)
+Objetivo: deixar o site da Ayuniqa lúdico, vivo e com personalidade de cassino — sem quebrar legibilidade, performance ou a identidade laranja/amarelo já existente. Aplicado em todas as páginas (Home, Games, Services, About, Contact, Client Zone, Admin) e em Header/Footer.
 
-A conexão com um projeto Supabase **existente** não pode ser feita por mim via ferramenta — apenas você pode autorizar, pois envolve login na sua conta Supabase. O fluxo é:
+## Bibliotecas
 
-1. No canto superior direito do editor Lovable, clique no botão verde **Supabase**.
-2. Faça login na sua conta Supabase (a que é dona do projeto `sbslimrugkzgnfacmlnm`).
-3. Selecione a organização e depois o projeto **sbslimrugkzgnfacmlnm**.
-4. Confirme a conexão.
+- **Motion for React** (`motion`) — animações declarativas, gestos `whileHover`/`whileTap`, transições de página com `AnimatePresence`.
+- **MagicUI** — componentes prontos via instalação manual (copiados para `src/components/magicui/`): `Meteors`, `Particles`, `BorderBeam`, `ShimmerButton`, `AuroraText`, `NumberTicker`, `BlurFade`, `AnimatedGridPattern`.
+- Sem `prefers-reduced-motion` (por escolha do usuário) — animações sempre ativas.
 
-Após isso, o Lovable injeta automaticamente as variáveis de ambiente (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, etc.) e cria os arquivos de integração (`src/integrations/supabase/client.ts`, `auth-middleware.ts`, `client.server.ts`).
+## Camadas globais (uma vez, valem para todas as páginas)
 
-## Passo 2 — Eu confirmo a conexão e preparo a base
+1. **Fundo animado do site**
+   - `AnimatedGridPattern` discreto no `__root.tsx` atrás de todo o conteúdo, com fade nas bordas.
+   - Camada opcional de `Particles` douradas/laranjas com baixa densidade.
+2. **Cursor com brilho** — pequeno halo radial laranja que segue o mouse (desktop apenas), implementado com `pointer-events: none`.
+3. **Transições de página** — `AnimatePresence` no `__root.tsx` envolvendo o `<Outlet/>`: fade + leve slide/scale ao trocar de rota.
+4. **Header**
+   - Logo Ayuniqa com micro-rotação contínua + pulso de brilho ao hover.
+   - Links com sublinhado animado (já existe `story-link`) + bounce no item ativo.
+   - Header encolhe e ganha blur/glow ao rolar (já há scroll; reforçar com transição suave).
+5. **Footer** — `BorderBeam` correndo pela borda superior; ícones sociais com `whileHover` (scale + rotate).
+6. **Botões CTA** — variante `ShimmerButton` (brilho deslizando) para todos os botões com `bg-gradient-brand`. CTAs principais disparam um burst de confete (lib `canvas-confetti`) ao clicar.
 
-Assim que você confirmar que conectou, eu:
+## Por página
 
-- Verifico os secrets disponíveis (`VITE_SUPABASE_URL`, etc.) para garantir que a conexão está ativa.
-- Confirmo o URL apontando para `sbslimrugkzgnfacmlnm.supabase.co`.
-- Listo as tabelas existentes no schema `public` (se houver) para entender o estado atual do banco.
-- Verifico se há usuários/auth já configurados.
+### Home (`src/routes/index.tsx`)
+- **Hero**: título com `AuroraText` nas palavras-chave; subtítulo com `BlurFade` em cascata; `Meteors` sobre o hero; o `HeroStage` (anel com reels) ganha um leve tilt 3D acompanhando o scroll.
+- **Stats / números**: `NumberTicker` que conta de 0 ao valor quando entra na viewport.
+- **Cards de features**: hover com tilt 3D (Motion), `BorderBeam` no card em destaque, ícone faz "spin" rápido no hover.
+- **Seções**: cada seção usa `ScrollReveal` com variações (fade-up, scale-in, flip-up) alternadas para ritmo visual.
 
-## Passo 3 — Próximos passos (definir depois)
+### Games (`games.tsx` e `games.$slug.tsx`)
+- Grid de jogos com entrada em cascata (stagger) e hover 3D nos cards + brilho na borda.
+- Badges ("Hot", "New") com pulso.
+- Página de detalhe: cover com efeito parallax no scroll, título com shimmer, seções reveladas em sequência.
 
-Com a conexão pronta, podemos avançar com qualquer um destes (me diga qual é a prioridade):
+### Services (`services.tsx`)
+- Ícones de serviço animados (loop sutil — girar, pulsar, balançar).
+- Linha conectando os passos do processo desenhada com `AnimatedBeam`.
 
-- **Autenticação** — login/cadastro para a Client Zone e o Admin (email/senha + Google, por exemplo).
-- **Catálogo de jogos no banco** — migrar `src/lib/games-data.ts` (hoje estático) para uma tabela `games` editável pelo Admin.
-- **Formulário de contato** — salvar mensagens em uma tabela `contact_messages`.
-- **Painel Admin funcional** — CRUD de jogos, gestão de partners, leitura de mensagens.
-- **Storage** — upload de capas de jogos e assets para parceiros (Client Zone).
+### About (`about.tsx`)
+- Timeline com reveals laterais alternados (esquerda/direita).
+- Foto/avatar da equipe com hover scale + tilt.
+
+### Contact (`contact.tsx`)
+- Inputs com foco animado (borda gradiente que "respira").
+- Botão de envio: shimmer + confete em caso de sucesso.
+- Ícones de contato com bounce no hover.
+
+### Client Zone e Admin
+- Cartão central com `BorderBeam` e ícone do cadeado pulsando.
+- Mesmas transições de página globais.
 
 ## Detalhes técnicos
 
-- Stack: TanStack Start (não usaremos Edge Functions para lógica interna — todo backend será via `createServerFn`).
-- RLS será habilitado em todas as tabelas com policies escopadas a `auth.uid()`.
-- Roles (admin/partner/user) ficarão em tabela separada `user_roles` + função `has_role()` security definer, conforme padrão de segurança.
-- Service role key fica server-only (`client.server.ts`), nunca exposta ao browser.
+- Adicionar deps: `motion`, `canvas-confetti` (+ tipos).
+- Instalar componentes MagicUI manualmente em `src/components/magicui/` seguindo a doc oficial (cada componente é um arquivo isolado, sem dependências extras além de `motion` e `clsx`).
+- Novo wrapper `src/components/site/PageTransition.tsx` para envolver `<Outlet/>` no `__root.tsx`.
+- Novo `src/components/site/SiteBackground.tsx` (grid + partículas) montado uma vez no `__root.tsx`.
+- Novo `src/components/site/CursorGlow.tsx` montado globalmente.
+- Estender `ScrollReveal` com variantes de "bounce" e "flip" usando Motion (mantendo a API atual).
+- Botão: nova variante `shimmer` em `src/components/ui/button.tsx` (sem quebrar variantes existentes).
+- Todos os tokens de cor continuam vindo de `src/styles.css` (laranja/amarelo/cinza) — nada hardcoded.
+- Performance: limitar densidade de partículas/meteoros, usar `will-change` apenas onde necessário, animações 100% CSS/transform (sem layout thrash).
 
----
+## Fora do escopo
 
-**Sua ação agora:** clique no botão verde Supabase no topo do editor e conecte o projeto `sbslimrugkzgnfacmlnm`. Me avise quando estiver feito que eu valido e seguimos.
+- Lógica de backend, dados, formulários reais — apenas camada visual.
+- Mudanças de layout/estrutura das páginas — só adicionamos animação ao que já existe.
