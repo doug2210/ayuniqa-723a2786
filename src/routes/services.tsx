@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Palette, Cpu, ShieldCheck, Plug, BarChart3, Headphones } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { ScrollReveal } from "@/components/site/ScrollReveal";
+import { TiltCard } from "@/components/site/TiltCard";
 
 export const Route = createFileRoute("/services")({
   head: () => ({
@@ -40,13 +41,15 @@ function Services() {
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {services.map((s, i) => (
             <ScrollReveal key={s.title} animation="fade-up" delay={i * 100}>
-              <div className="group rounded-2xl border border-border bg-card p-6 shadow-card transition-smooth hover:-translate-y-1 hover:shadow-glow">
-                <div className="grid h-12 w-12 place-items-center rounded-xl bg-gradient-brand text-white">
-                  <s.icon className="!size-5" />
+              <TiltCard className="h-full">
+                <div className="group h-full rounded-2xl border border-border bg-card p-6 shadow-card transition-smooth hover:shadow-glow">
+                  <div className="grid h-12 w-12 place-items-center rounded-xl bg-gradient-brand text-white transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110">
+                    <s.icon className="!size-5 transition-transform duration-500 group-hover:scale-110" />
+                  </div>
+                  <h3 className="mt-5 text-lg font-bold">{s.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{s.body}</p>
                 </div>
-                <h3 className="mt-5 text-lg font-bold">{s.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{s.body}</p>
-              </div>
+              </TiltCard>
             </ScrollReveal>
           ))}
         </div>
