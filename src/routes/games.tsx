@@ -78,7 +78,7 @@ function GamesPage() {
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtered.map((g, i) => (
-              <ScrollReveal key={g.slug} animation="fade-up" delay={(i % 4) * 100}>
+              <ScrollReveal key={g.slug} animation="fade-up" delay={i * 80}>
                 <TiltCard intensity={6}>
                 <Link
                   to="/games/$slug"
