@@ -1,10 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import logoAsset from "@/assets/ayuniqa-logo.png.asset.json";
+import { BorderBeam } from "@/components/magicui/border-beam";
 
 export function Footer() {
   return (
-    <footer className="mt-24 border-t border-border bg-secondary/40">
+    <footer className="relative mt-24 overflow-hidden border-t border-border bg-secondary/40">
+      <BorderBeam size={260} duration={12} />
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-4 lg:px-8">
         <div>
           <img src={logoAsset.url} alt="Ayuniqa" className="h-9 w-auto" />

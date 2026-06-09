@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { games, categories } from "@/lib/games-data";
 import { cn } from "@/lib/utils";
 import { ScrollReveal } from "@/components/site/ScrollReveal";
+import { TiltCard } from "@/components/site/TiltCard";
 
 export const Route = createFileRoute("/games")({
   head: () => ({
@@ -78,6 +79,7 @@ function GamesPage() {
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtered.map((g, i) => (
               <ScrollReveal key={g.slug} animation="fade-up" delay={(i % 4) * 100}>
+                <TiltCard intensity={6}>
                 <Link
                   to="/games/$slug"
                   params={{ slug: g.slug }}
@@ -85,7 +87,7 @@ function GamesPage() {
                 >
                   <div className="relative aspect-square overflow-hidden bg-gradient-warm">
                     <img src={g.cover} alt={g.title} loading="lazy" width={1024} height={1024} className="h-full w-full object-cover transition-smooth group-hover:scale-105" />
-                    <span className="absolute right-3 top-3 rounded-full bg-[color:var(--brand-yellow)] px-2 py-0.5 text-[10px] font-bold text-[color:var(--brand-grey)]">
+                    <span className="absolute right-3 top-3 animate-bounce-soft rounded-full bg-[color:var(--brand-yellow)] px-2 py-0.5 text-[10px] font-bold text-[color:var(--brand-grey)]">
                       {g.category}
                     </span>
                   </div>
@@ -101,6 +103,7 @@ function GamesPage() {
                     </div>
                   </div>
                 </Link>
+                </TiltCard>
               </ScrollReveal>
             ))}
           </div>

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ScrollReveal } from "@/components/site/ScrollReveal";
+import { fireConfetti } from "@/components/site/ConfettiBurst";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -59,6 +60,7 @@ function Contact() {
                 onSubmit={(e) => {
                   e.preventDefault();
                   setSent(true);
+                  fireConfetti();
                 }}
               >
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -70,7 +72,7 @@ function Contact() {
                   <Label htmlFor="message">How can we help?</Label>
                   <Textarea id="message" required rows={5} className="mt-1.5" />
                 </div>
-                <Button type="submit" size="lg" className="w-full bg-gradient-brand text-white shadow-glow">
+                <Button type="submit" size="lg" variant="shimmer" className="w-full">
                   Send message
                 </Button>
               </form>

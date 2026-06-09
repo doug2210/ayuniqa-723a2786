@@ -3,6 +3,7 @@ import { Lock } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "@/components/site/ScrollReveal";
+import { BorderBeam } from "@/components/magicui/border-beam";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -19,8 +20,9 @@ function Admin() {
     <SiteLayout>
       <section className="mx-auto max-w-3xl px-4 py-32 text-center sm:px-6 lg:px-8">
         <ScrollReveal animation="zoom-in">
-          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-brand text-white shadow-glow">
-            <Lock />
+          <div className="relative mx-auto grid h-14 w-14 place-items-center overflow-hidden rounded-2xl bg-gradient-brand text-white shadow-glow">
+            <BorderBeam size={80} duration={6} />
+            <Lock className="animate-bounce-soft" />
           </div>
           <h1 className="mt-6 text-4xl font-black tracking-tight sm:text-5xl">Admin panel</h1>
           <p className="mt-3 text-muted-foreground">

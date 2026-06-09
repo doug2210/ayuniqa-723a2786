@@ -5,6 +5,12 @@ import { Button } from "@/components/ui/button";
 import { games } from "@/lib/games-data";
 import { HeroStage } from "@/components/site/HeroStage";
 import { ScrollReveal } from "@/components/site/ScrollReveal";
+import { Meteors } from "@/components/magicui/meteors";
+import { AuroraText } from "@/components/magicui/aurora-text";
+import { NumberTicker } from "@/components/magicui/number-ticker";
+import { BorderBeam } from "@/components/magicui/border-beam";
+import { TiltCard } from "@/components/site/TiltCard";
+import { confettiFromEvent } from "@/components/site/ConfettiBurst";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -33,20 +39,21 @@ function Index() {
 function Hero() {
   return (
     <section className="relative overflow-hidden">
+      <Meteors number={18} />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,color-mix(in_oklab,var(--brand-light-orange)_25%,transparent),transparent_60%),radial-gradient(ellipse_at_bottom_left,color-mix(in_oklab,var(--brand-yellow)_18%,transparent),transparent_55%)]" />
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-28">
         <div className="animate-fade-up">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-foreground/80 shadow-card">
-            <Sparkles className="text-[color:var(--brand-orange)]" /> iGaming Studio · est. 2021
+            <Sparkles className="animate-wiggle text-[color:var(--brand-orange)]" /> iGaming Studio · est. 2021
           </span>
           <h1 className="mt-5 text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-            Slots that <span className="text-gradient-brand">spin smarter</span>, win bigger.
+            Slots that <AuroraText>spin smarter</AuroraText>, win bigger.
           </h1>
           <p className="mt-5 max-w-xl text-lg text-muted-foreground">
             We design, build and certify premium HTML5 slot games for operators across regulated markets — bold art, fair math, and seamless integration.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button asChild size="lg" className="bg-gradient-brand text-white hover:opacity-90 shadow-glow">
+            <Button asChild size="lg" variant="shimmer" onClick={confettiFromEvent}>
               <Link to="/games">Explore games <ArrowRight /></Link>
             </Button>
             <Button asChild size="lg" variant="outline">
@@ -54,9 +61,9 @@ function Hero() {
             </Button>
           </div>
           <div className="mt-10 grid max-w-md grid-cols-3 gap-6 text-sm">
-            <Stat n="40+" label="Slot titles" />
-            <Stat n="25" label="Markets" />
-            <Stat n="99.9%" label="Uptime" />
+            <Stat value={40} suffix="+" label="Slot titles" />
+            <Stat value={25} label="Markets" />
+            <Stat value={99.9} suffix="%" decimals={1} label="Uptime" />
           </div>
         </div>
         <div className="relative">
@@ -70,10 +77,12 @@ function Hero() {
   );
 }
 
-function Stat({ n, label }: { n: string; label: string }) {
+function Stat({ value, suffix = "", decimals = 0, label }: { value: number; suffix?: string; decimals?: number; label: string }) {
   return (
     <div>
-      <div className="text-3xl font-black text-gradient-brand">{n}</div>
+      <div className="text-3xl font-black text-gradient-brand">
+        <NumberTicker value={value} suffix={suffix} decimalPlaces={decimals} />
+      </div>
       <div className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
     </div>
   );
@@ -100,13 +109,16 @@ function Strengths() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {strengths.map((s, i) => (
           <ScrollReveal key={s.title} animation="fade-up" delay={i * 100}>
-            <div className="group rounded-2xl border border-border bg-card p-6 shadow-card transition-smooth hover:-translate-y-1 hover:shadow-glow">
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-brand text-white transition-smooth group-hover:scale-110">
-                <s.icon className="!size-5" />
+            <TiltCard className="h-full">
+              <div className="group relative h-full overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-card transition-smooth hover:shadow-glow">
+                {i === 0 && <BorderBeam size={180} duration={9} />}
+                <div className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-brand text-white transition-smooth group-hover:scale-110 group-hover:rotate-6">
+                  <s.icon className="!size-5" />
+                </div>
+                <h3 className="mt-5 text-lg font-bold">{s.title}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{s.body}</p>
               </div>
-              <h3 className="mt-5 text-lg font-bold">{s.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{s.body}</p>
-            </div>
+            </TiltCard>
           </ScrollReveal>
         ))}
       </div>
@@ -203,11 +215,12 @@ function CTA() {
     <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
       <ScrollReveal animation="zoom-in">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-brand p-10 text-white shadow-glow sm:p-14">
+          <BorderBeam size={320} duration={10} colorFrom="#ffffff" colorTo="var(--brand-yellow)" />
           <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-[color:var(--brand-yellow)]/30 blur-3xl" />
           <h2 className="max-w-2xl text-3xl font-black sm:text-5xl">Ready to add Ayuniqa titles to your lobby?</h2>
           <p className="mt-3 max-w-xl text-white/90">Tell us about your platform — we'll get you live with a sample title in 14 days.</p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <Button asChild size="lg" variant="secondary">
+            <Button asChild size="lg" variant="secondary" onClick={confettiFromEvent}>
               <Link to="/contact">Get in touch</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="border-white/40 bg-white/0 text-white hover:bg-white/10 hover:text-white">
