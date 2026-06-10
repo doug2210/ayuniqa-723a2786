@@ -143,7 +143,7 @@ function FeaturedGames() {
         </ScrollReveal>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {games.map((g, i) => (
-            <ScrollReveal key={g.slug} animation="fade-up" delay={i * 100}>
+            <ScrollReveal key={g.slug} animation="fade-up" delay={i * 150}>
               <Link
                 to="/games/$slug"
                 params={{ slug: g.slug }}
@@ -196,7 +196,7 @@ function Services() {
         </ScrollReveal>
         <div className="grid gap-4 sm:grid-cols-2">
           {items.map((i, idx) => (
-            <ScrollReveal key={i.title} animation="fade-up" delay={idx * 100}>
+            <ScrollReveal key={i.title} animation="fade-up" delay={idx * 150}>
               <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
                 <div className="text-xs font-bold text-[color:var(--brand-orange)]">0{idx + 1}</div>
                 <h3 className="mt-1 font-bold">{i.title}</h3>
