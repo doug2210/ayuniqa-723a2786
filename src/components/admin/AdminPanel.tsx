@@ -26,13 +26,31 @@ import {
   DEFAULT_HERO,
   DEFAULT_CONTACT,
   DEFAULT_SITE_CONFIG,
+  DEFAULT_HERO_STAGE,
+  DEFAULT_STATS,
+  DEFAULT_AWARD,
+  STAGE_ICON_NAMES,
   type FloatingConfig,
   type GameOverride,
   type SiteConfig,
+  type HeroStageConfig,
+  type HeroStageSymbol,
+  type HeroStageBadge,
+  type StatItem,
+  type AwardBadge,
+  type StageTint,
 } from "@/lib/site-config";
 import { DEFAULT_FLOATING_ITEMS, type FloatingItem } from "@/lib/site-config";
 import { ImageField } from "./ImageField";
 import { adminSignOut } from "./AdminGate";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function AdminPanel() {
   const { config, setConfig, reset } = useSiteConfig();
