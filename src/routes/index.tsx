@@ -63,24 +63,18 @@ function Hero() {
             </Button>
           </div>
           <div className="mt-10 grid max-w-2xl grid-cols-3 gap-3 sm:gap-7">
-            <Stat value={40} suffix="+" label="Slot titles" />
-            <Stat value={25} label="Markets" />
-            <Stat value={99.9} suffix="%" decimals={1} label="Uptime" />
+            {h.stats.filter((s) => s.enabled).map((s, i) => (
+              <Stat key={i} value={s.value} suffix={s.suffix} decimals={s.decimals} label={s.label} />
+            ))}
           </div>
         </div>
         <div className="relative">
-          {h.heroImageUrl ? (
-            <img
-              src={h.heroImageUrl}
-              alt="Hero"
-              className="mx-auto w-full max-w-[560px] rounded-3xl shadow-glow"
-            />
-          ) : (
-            <HeroStage />
+          <HeroStage />
+          {h.award.enabled && (
+            <span className="absolute -bottom-2 left-1/2 z-30 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[color:var(--brand-yellow)] px-3 py-1.5 text-xs font-bold text-[color:var(--brand-grey)] shadow-card">
+              <Trophy className="!size-3.5" /> {h.award.label}
+            </span>
           )}
-          <span className="absolute -bottom-2 left-1/2 z-30 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[color:var(--brand-yellow)] px-3 py-1.5 text-xs font-bold text-[color:var(--brand-grey)] shadow-card">
-            <Trophy className="!size-3.5" /> Studio of the year nominee
-          </span>
         </div>
       </div>
     </section>
