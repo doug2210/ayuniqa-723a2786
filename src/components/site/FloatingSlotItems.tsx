@@ -69,22 +69,22 @@ export function FloatingSlotItems({
       const side = i % 2 === 0 ? "left" : "right";
       let leftVw: number;
       if (side === "left") {
-        leftVw = rand() * 10; // 0-10vw
+        leftVw = rand() * 12; // 0-12vw
       } else {
-        leftVw = 90 + rand() * 10; // 90-100vw
+        leftVw = 88 + rand() * 12; // 88-100vw
       }
       out.push({
         ...base,
         id: i,
         left: leftVw,
-        offset: rand() * 1200,
+        offset: rand() * stage,
         drift: 20 + rand() * 60,
         driftSpeed: 0.0008 + rand() * 0.0014,
         rotate: (rand() - 0.5) * 0.4,
       });
     }
     return out;
-  }, [items, density]);
+  }, [items, density, stage]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
