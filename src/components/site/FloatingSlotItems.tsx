@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
 
 // Default slot-themed symbols. Later, the admin panel can override
 // this list (and per-symbol speed/size/opacity) via a backend config.
@@ -35,12 +36,15 @@ function seededRandom(seed: number) {
 }
 
 export function FloatingSlotItems({
-  items = DEFAULT_FLOATING_ITEMS,
-  density = 1.2,
+  items,
+  density,
 }: {
   items?: FloatingItem[];
   density?: number;
 }) {
+  const { config } = useSiteConfig();
+  const effectiveItems = items ?? config.floating.items;
+  const effectiveDensity = density ?? config.floating.density;
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollY, setScrollY] = useState(0);
   const [vh, setVh] = useState(typeof window !== "undefined" ? window.innerHeight : 800);
@@ -55,10 +59,10 @@ export function FloatingSlotItems({
   // Build a stable layout of placed items (deterministic per render).
   const placed = useMemo<Placed[]>(() => {
     const rand = seededRandom(1337);
-    const count = Math.round(items.length * density);
+    const count = Math.max(0, Math.round(effectiveItems.length * effectiveDensity));
     const out: Placed[] = [];
     for (let i = 0; i < count; i++) {
-      const base = items[i % items.length];
+      const base = effectiveItems[i % effectiveItems.length];
       // Place symbols on the left or right edge only so they never overlap content.
       const side = i % 2 === 0 ? "left" : "right";
       let leftVw: number;
@@ -87,7 +91,7 @@ export function FloatingSlotItems({
       });
     }
     return out;
-  }, [items, density, stage, isMobile]);
+  }, [effectiveItems, effectiveDensity, stage, isMobile]);
 
 
   useEffect(() => {
