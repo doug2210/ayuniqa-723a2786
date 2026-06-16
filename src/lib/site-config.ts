@@ -105,7 +105,12 @@ export function mergedGames(overrides: GameOverride[]): Game[] {
   const map = new Map(overrides.map((o) => [o.slug, o]));
   return defaultGames.map((g) => {
     const o = map.get(g.slug);
-    return o ? { ...g, ...o } : g;
+    if (!o) return g;
+    // Strip undefined overrides so they don't blank-out defaults.
+    const clean = Object.fromEntries(
+      Object.entries(o).filter(([, v]) => v !== undefined && v !== ""),
+    );
+    return { ...g, ...clean };
   });
 }
 
