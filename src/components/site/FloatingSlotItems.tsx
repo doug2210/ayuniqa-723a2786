@@ -1,21 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-
-// Default slot-themed symbols. Later, the admin panel can override
-// this list (and per-symbol speed/size/opacity) via a backend config.
-// Until then, the source of truth lives here so anyone can tweak it.
-export type FloatingItem = {
-  symbol: string; // emoji or short text
-  size?: number; // px
-  speed?: number; // multiplier, 1 = matches scroll
-  opacity?: number;
-  hue?: number; // optional drop-shadow color hue
-};
-
-export const DEFAULT_FLOATING_ITEMS: FloatingItem[] = [
-  { symbol: "💎", size: 110, speed: 0.7, opacity: 1.0, hue: 190 },
-  { symbol: "7️⃣", size: 130, speed: 0.5, opacity: 1.0, hue: 0 },
-  { symbol: "🎰", size: 140, speed: 0.45, opacity: 1.0, hue: 280 },
-];
+import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
+import { DEFAULT_FLOATING_ITEMS, type FloatingItem } from "@/lib/site-config";
+export { DEFAULT_FLOATING_ITEMS, type FloatingItem };
 
 type Placed = FloatingItem & {
   id: number;
@@ -35,12 +21,15 @@ function seededRandom(seed: number) {
 }
 
 export function FloatingSlotItems({
-  items = DEFAULT_FLOATING_ITEMS,
-  density = 1.2,
+  items,
+  density,
 }: {
   items?: FloatingItem[];
   density?: number;
 }) {
+  const { config } = useSiteConfig();
+  const effectiveItems = items ?? config.floating.items;
+  const effectiveDensity = density ?? config.floating.density;
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollY, setScrollY] = useState(0);
   const [vh, setVh] = useState(typeof window !== "undefined" ? window.innerHeight : 800);
@@ -55,10 +44,10 @@ export function FloatingSlotItems({
   // Build a stable layout of placed items (deterministic per render).
   const placed = useMemo<Placed[]>(() => {
     const rand = seededRandom(1337);
-    const count = Math.round(items.length * density);
+    const count = Math.max(0, Math.round(effectiveItems.length * effectiveDensity));
     const out: Placed[] = [];
     for (let i = 0; i < count; i++) {
-      const base = items[i % items.length];
+      const base = effectiveItems[i % effectiveItems.length];
       // Place symbols on the left or right edge only so they never overlap content.
       const side = i % 2 === 0 ? "left" : "right";
       let leftVw: number;
@@ -87,7 +76,7 @@ export function FloatingSlotItems({
       });
     }
     return out;
-  }, [items, density, stage, isMobile]);
+  }, [effectiveItems, effectiveDensity, stage, isMobile]);
 
 
   useEffect(() => {

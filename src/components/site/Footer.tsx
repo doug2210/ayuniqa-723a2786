@@ -2,8 +2,10 @@ import { Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import logoAsset from "@/assets/ayuniqa-logo.png.asset.json";
 import { BorderBeam } from "@/components/magicui/border-beam";
+import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
 
 export function Footer() {
+  const { config } = useSiteConfig();
   return (
     <footer className="relative mt-24 overflow-hidden border-t border-border bg-secondary/40">
       <BorderBeam size={260} duration={12} />
@@ -25,9 +27,7 @@ export function Footer() {
         ]} />
         <div>
           <h4 className="text-sm font-semibold">Compliance</h4>
-          <p className="mt-3 text-xs text-muted-foreground">
-            B2B only. 18+. We do not offer real-money gambling to end users.
-          </p>
+          <p className="mt-3 text-xs text-muted-foreground">{config.contact.compliance}</p>
         </div>
       </div>
       <Copyright />

@@ -2,13 +2,15 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft, Check } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
-import { games } from "@/lib/games-data";
+import { games as defaultGamesList } from "@/lib/games-data";
+import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
+import { mergedGames } from "@/lib/site-config";
 import { ScrollReveal } from "@/components/site/ScrollReveal";
 import { BorderBeam } from "@/components/magicui/border-beam";
 
 export const Route = createFileRoute("/games/$slug")({
   loader: ({ params }) => {
-    const game = games.find((g) => g.slug === params.slug);
+    const game = defaultGamesList.find((g) => g.slug === params.slug);
     if (!game) throw notFound();
     return { game };
   },
@@ -45,7 +47,9 @@ export const Route = createFileRoute("/games/$slug")({
 });
 
 function GameDetail() {
-  const { game } = Route.useLoaderData();
+  const { game: defaultGame } = Route.useLoaderData();
+  const { config } = useSiteConfig();
+  const game = mergedGames(config.games).find((g) => g.slug === defaultGame.slug) ?? defaultGame;
   return (
     <SiteLayout>
       <section className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">

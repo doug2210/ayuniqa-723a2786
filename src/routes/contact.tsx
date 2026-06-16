@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ScrollReveal } from "@/components/site/ScrollReveal";
 import { fireConfetti } from "@/components/site/ConfettiBurst";
+import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/contact")({
 
 function Contact() {
   const [sent, setSent] = useState(false);
+  const { config } = useSiteConfig();
 
   return (
     <SiteLayout>
@@ -37,9 +39,9 @@ function Contact() {
             </p>
 
             <div className="mt-10 space-y-4 text-sm">
-              <InfoRow icon={Mail} label="partners@ayuniqa.io" />
-              <InfoRow icon={Phone} label="+356 2778 0000" />
-              <InfoRow icon={MapPin} label="Sliema, Malta · Sofia, Bulgaria" />
+              <InfoRow icon={Mail} label={config.contact.email} />
+              <InfoRow icon={Phone} label={config.contact.phone} />
+              <InfoRow icon={MapPin} label={config.contact.address} />
             </div>
           </div>
         </ScrollReveal>

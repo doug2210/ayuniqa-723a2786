@@ -11,6 +11,8 @@ import { NumberTicker } from "@/components/magicui/number-ticker";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import { TiltCard } from "@/components/site/TiltCard";
 import { confettiFromEvent } from "@/components/site/ConfettiBurst";
+import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
+import { mergedGames } from "@/lib/site-config";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -37,6 +39,8 @@ function Index() {
 }
 
 function Hero() {
+  const { config } = useSiteConfig();
+  const h = config.hero;
   return (
     <section className="relative overflow-hidden">
       <Meteors number={18} />
@@ -44,20 +48,18 @@ function Hero() {
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-28">
         <div className="animate-fade-up">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-foreground/80 shadow-card">
-            <Sparkles className="animate-wiggle text-[color:var(--brand-orange)]" /> iGaming Studio · est. 2021
+            <Sparkles className="animate-wiggle text-[color:var(--brand-orange)]" /> {h.badge}
           </span>
           <h1 className="mt-5 text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-            Slots that <AuroraText>spin smarter</AuroraText>, win bigger.
+            {h.titlePrefix}<AuroraText>{h.titleAccent}</AuroraText>{h.titleSuffix}
           </h1>
-          <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-            We design, build and certify premium HTML5 slot games for operators across regulated markets — bold art, fair math, and seamless integration.
-          </p>
+          <p className="mt-5 max-w-xl text-lg text-muted-foreground">{h.subtitle}</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg" variant="shimmer" onClick={confettiFromEvent}>
-              <Link to="/games">Explore games <ArrowRight /></Link>
+              <a href={h.primaryCta.href}>{h.primaryCta.label} <ArrowRight /></a>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link to="/contact">Partner with us</Link>
+              <a href={h.secondaryCta.href}>{h.secondaryCta.label}</a>
             </Button>
           </div>
           <div className="mt-10 grid max-w-md grid-cols-3 gap-6 text-sm">
@@ -67,7 +69,15 @@ function Hero() {
           </div>
         </div>
         <div className="relative">
-          <HeroStage />
+          {h.heroImageUrl ? (
+            <img
+              src={h.heroImageUrl}
+              alt="Hero"
+              className="mx-auto w-full max-w-[560px] rounded-3xl shadow-glow"
+            />
+          ) : (
+            <HeroStage />
+          )}
           <span className="absolute -bottom-2 left-1/2 z-30 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[color:var(--brand-yellow)] px-3 py-1.5 text-xs font-bold text-[color:var(--brand-grey)] shadow-card">
             <Trophy className="!size-3.5" /> Studio of the year nominee
           </span>
@@ -127,6 +137,8 @@ function Strengths() {
 }
 
 function FeaturedGames() {
+  const { config } = useSiteConfig();
+  const games = mergedGames(config.games);
   return (
     <section className="bg-secondary/40 py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

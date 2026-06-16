@@ -3,7 +3,9 @@ import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Input } from "@/components/ui/input";
-import { games, categories } from "@/lib/games-data";
+import { categories } from "@/lib/games-data";
+import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
+import { mergedGames } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 import { ScrollReveal } from "@/components/site/ScrollReveal";
 import { TiltCard } from "@/components/site/TiltCard";
@@ -23,6 +25,8 @@ export const Route = createFileRoute("/games")({
 function GamesPage() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("All");
+  const { config } = useSiteConfig();
+  const games = mergedGames(config.games);
 
   const filtered = useMemo(
     () =>
@@ -31,7 +35,7 @@ function GamesPage() {
           (cat === "All" || g.category === cat) &&
           (q === "" || g.title.toLowerCase().includes(q.toLowerCase())),
       ),
-    [q, cat],
+    [q, cat, games],
   );
 
   return (
