@@ -62,7 +62,7 @@ function Hero() {
               <a href={h.secondaryCta.href}>{h.secondaryCta.label}</a>
             </Button>
           </div>
-          <div className="mt-10 grid max-w-2xl grid-cols-3 gap-3 sm:gap-7">
+          <div className="relative z-10 mt-10 grid max-w-2xl grid-cols-3 gap-3 sm:gap-7">
             {h.stats.filter((s) => s.enabled).map((s, i) => (
               <Stat key={i} value={s.value} suffix={s.suffix} decimals={s.decimals} label={s.label} />
             ))}
