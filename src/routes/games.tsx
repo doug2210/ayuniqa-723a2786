@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Input } from "@/components/ui/input";
-import { games as defaultGames, categories } from "@/lib/games-data";
+import { categories } from "@/lib/games-data";
 import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
 import { mergedGames } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
