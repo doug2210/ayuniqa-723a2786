@@ -71,9 +71,9 @@ export function FloatingSlotItems({
         }
       } else {
         if (side === "left") {
-          leftVw = rand() * 12; // 0-12vw
+          leftVw = -6 + rand() * 8; // -6 to 2vw (edge / slightly off-screen)
         } else {
-          leftVw = 88 + rand() * 12; // 88-100vw
+          leftVw = 98 + rand() * 8; // 98 to 106vw (edge / slightly off-screen)
         }
       }
       out.push({
