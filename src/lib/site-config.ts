@@ -6,6 +6,8 @@ export type FloatingItem = {
   speed?: number;
   opacity?: number;
   hue?: number;
+  /** Optional image (PNG/SVG). When set, the image is rendered instead of the emoji/text symbol. */
+  imageUrl?: string | null;
 };
 
 export const DEFAULT_FLOATING_ITEMS: FloatingItem[] = [

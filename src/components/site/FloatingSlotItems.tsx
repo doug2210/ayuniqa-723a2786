@@ -139,21 +139,40 @@ export function FloatingSlotItems({
         const sidePosition = p.side === "left"
           ? { left: `calc(${p.inset}vw - ${hiddenOffset}px)` }
           : { right: `calc(${p.inset}vw - ${hiddenOffset}px)` };
+        const commonStyle = {
+          position: "absolute" as const,
+          ...sidePosition,
+          top: 0,
+          transform: `translate3d(${directionalSway}px, ${y}px, 0) rotate(${rot}deg)`,
+          opacity: (p.opacity ?? 0.8) * edgeOpacity,
+          filter,
+          willChange: "transform" as const,
+          userSelect: "none" as const,
+          lineHeight: 1,
+        };
+        if (p.imageUrl) {
+          return (
+            <img
+              key={p.id}
+              src={p.imageUrl}
+              alt=""
+              draggable={false}
+              style={{
+                ...commonStyle,
+                width: `${effectiveSize}px`,
+                height: `${effectiveSize}px`,
+                objectFit: "contain",
+              }}
+            />
+          );
+        }
         return (
           <span
             key={p.id}
             style={{
-              position: "absolute",
-              ...sidePosition,
-              top: 0,
-              transform: `translate3d(${directionalSway}px, ${y}px, 0) rotate(${rot}deg)`,
+              ...commonStyle,
               fontSize: `${effectiveSize}px`,
-              opacity: (p.opacity ?? 0.8) * edgeOpacity,
-              filter,
               textShadow,
-              willChange: "transform",
-              userSelect: "none",
-              lineHeight: 1,
             }}
           >
             {p.symbol}

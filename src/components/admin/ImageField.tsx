@@ -9,11 +9,15 @@ export function ImageField({
   value,
   onChange,
   placeholder = "https://… or upload below",
+  accept = "image/*",
+  uploadLabel = "Upload image",
 }: {
   label: string;
   value: string | null | undefined;
   onChange: (next: string | null) => void;
   placeholder?: string;
+  accept?: string;
+  uploadLabel?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -48,7 +52,7 @@ export function ImageField({
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept={accept}
           className="hidden"
           onChange={(e) => {
             const f = e.target.files?.[0];
@@ -57,7 +61,7 @@ export function ImageField({
           }}
         />
         <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => inputRef.current?.click()}>
-          <Upload className="!size-3.5" /> {busy ? "Uploading…" : "Upload image"}
+          <Upload className="!size-3.5" /> {busy ? "Uploading…" : uploadLabel}
         </Button>
         {value && (
           <Button type="button" variant="ghost" size="sm" onClick={() => onChange(null)}>

@@ -201,19 +201,39 @@ function FloatingEditor({
       <div className="grid gap-3">
         {value.items.map((it, i) => (
           <Card key={i} className="p-4">
-            <div className="grid gap-3 sm:grid-cols-[auto,1fr,1fr,1fr,1fr,1fr,auto] sm:items-end">
-              <div className="grid h-12 w-12 place-items-center rounded-lg bg-muted text-2xl">{it.symbol || "?"}</div>
-              <div>
-                <Label className="text-xs">Symbol</Label>
-                <Input value={it.symbol} onChange={(e) => update(i, { symbol: e.target.value })} />
+            <div className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-[auto,1fr,1fr,1fr,1fr,1fr,auto] sm:items-end">
+                <div className="grid h-12 w-12 place-items-center overflow-hidden rounded-lg bg-muted text-2xl">
+                  {it.imageUrl ? (
+                    <img src={it.imageUrl} alt="" className="h-full w-full object-contain" />
+                  ) : (
+                    it.symbol || "?"
+                  )}
+                </div>
+                <div>
+                  <Label className="text-xs">Symbol {it.imageUrl ? "(hidden — image set)" : ""}</Label>
+                  <Input
+                    value={it.symbol}
+                    onChange={(e) => update(i, { symbol: e.target.value })}
+                    disabled={!!it.imageUrl}
+                  />
+                </div>
+                <NumberField label="Size" value={it.size ?? 80} min={20} max={300} step={2} onChange={(v) => update(i, { size: v })} />
+                <NumberField label="Speed" value={it.speed ?? 0.5} min={0.05} max={2} step={0.05} onChange={(v) => update(i, { speed: v })} />
+                <NumberField label="Opacity" value={it.opacity ?? 1} min={0.1} max={1} step={0.05} onChange={(v) => update(i, { opacity: v })} />
+                <NumberField label="Hue" value={it.hue ?? 0} min={0} max={360} step={5} onChange={(v) => update(i, { hue: v })} />
+                <Button variant="ghost" size="icon" onClick={() => remove(i)} aria-label="Remove">
+                  <Trash2 className="!size-4 text-destructive" />
+                </Button>
               </div>
-              <NumberField label="Size" value={it.size ?? 80} min={20} max={300} step={2} onChange={(v) => update(i, { size: v })} />
-              <NumberField label="Speed" value={it.speed ?? 0.5} min={0.05} max={2} step={0.05} onChange={(v) => update(i, { speed: v })} />
-              <NumberField label="Opacity" value={it.opacity ?? 1} min={0.1} max={1} step={0.05} onChange={(v) => update(i, { opacity: v })} />
-              <NumberField label="Hue" value={it.hue ?? 0} min={0} max={360} step={5} onChange={(v) => update(i, { hue: v })} />
-              <Button variant="ghost" size="icon" onClick={() => remove(i)} aria-label="Remove">
-                <Trash2 className="!size-4 text-destructive" />
-              </Button>
+              <ImageField
+                label="Custom image (PNG / SVG) — replaces the emoji symbol when set"
+                value={it.imageUrl ?? null}
+                onChange={(v) => update(i, { imageUrl: v })}
+                placeholder="https://… or upload a .png / .svg"
+                accept="image/png,image/svg+xml,image/webp,image/jpeg,image/gif"
+                uploadLabel="Upload PNG / SVG"
+              />
             </div>
           </Card>
         ))}
