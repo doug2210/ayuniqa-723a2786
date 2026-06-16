@@ -138,6 +138,7 @@ export function FloatingSlotItems({
         const textShadow = p.hue !== undefined
           ? `0 0 12px hsl(${p.hue} 90% 60% / 0.8), 0 0 24px hsl(${p.hue} 90% 60% / 0.5)`
           : "0 0 12px rgba(255,255,255,0.6), 0 0 24px rgba(255,255,255,0.3)";
+        const effectiveSize = isMobile ? Math.round((p.size ?? 40) * 0.6) : (p.size ?? 40);
         return (
           <span
             key={p.id}
@@ -146,7 +147,7 @@ export function FloatingSlotItems({
               left: `${p.left}vw`,
               top: 0,
               transform: `translate3d(${sway}px, ${y}px, 0) rotate(${rot}deg)`,
-              fontSize: `${p.size ?? 40}px`,
+              fontSize: `${effectiveSize}px`,
               opacity: p.opacity ?? 0.8,
               filter,
               textShadow,
