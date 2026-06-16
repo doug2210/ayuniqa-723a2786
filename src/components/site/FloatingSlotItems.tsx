@@ -55,14 +55,14 @@ export function FloatingSlotItems({
 
     const place = (rand: () => number, side: "left" | "right") => {
       const base = effectiveItems[id % effectiveItems.length];
-      const inset = isMobile ? 0.5 + rand() * 2.5 : 1 + rand() * 3.5;
+      const inset = isMobile ? 0.25 + rand() * 1.5 : 0.4 + rand() * 2.2;
       out.push({
         ...base,
         id,
         side,
         inset,
         offset: rand() * stage,
-        drift: isMobile ? 4 + rand() * 8 : 8 + rand() * 22,
+        drift: isMobile ? 3 + rand() * 6 : 6 + rand() * 16,
         driftSpeed: 0.0008 + rand() * 0.0014,
         rotate: (rand() - 0.5) * 0.4,
       });
@@ -128,17 +128,17 @@ export function FloatingSlotItems({
           ? `0 0 12px hsl(${p.hue} 90% 60% / 0.8), 0 0 24px hsl(${p.hue} 90% 60% / 0.5)`
           : "0 0 12px rgba(255,255,255,0.6), 0 0 24px rgba(255,255,255,0.3)";
         const effectiveSize = isMobile ? Math.round((p.size ?? 40) * 0.6) : (p.size ?? 40);
+        const directionalSway = p.side === "left" ? -Math.abs(sway) : Math.abs(sway);
+        const hiddenOffset = Math.round(effectiveSize * (isMobile ? 0.56 : 0.64));
         const insetPx = (p.inset / 100) * vw;
-        const centerX = p.side === "left"
-          ? insetPx + sway + effectiveSize / 2
-          : vw - insetPx + sway - effectiveSize / 2;
-        const fadeStart = isMobile ? vw * 0.18 : Math.min(180, vw * 0.14);
-        const fadeEnd = isMobile ? vw * 0.34 : Math.min(340, vw * 0.26);
-        const fadeProgress = p.side === "left"
-          ? (centerX - fadeStart) / (fadeEnd - fadeStart)
-          : (vw - fadeStart - centerX) / (fadeEnd - fadeStart);
+        const visibleIntrusion = insetPx + effectiveSize - hiddenOffset;
+        const fadeStart = isMobile ? 48 : 96;
+        const fadeEnd = isMobile ? 96 : 150;
+        const fadeProgress = (visibleIntrusion - fadeStart) / (fadeEnd - fadeStart);
         const edgeOpacity = Math.max(0, Math.min(1, 1 - fadeProgress));
-        const sidePosition = p.side === "left" ? { left: `${p.inset}vw` } : { right: `${p.inset}vw` };
+        const sidePosition = p.side === "left"
+          ? { left: `calc(${p.inset}vw - ${hiddenOffset}px)` }
+          : { right: `calc(${p.inset}vw - ${hiddenOffset}px)` };
         return (
           <span
             key={p.id}
@@ -146,7 +146,7 @@ export function FloatingSlotItems({
               position: "absolute",
               ...sidePosition,
               top: 0,
-              transform: `translate3d(${sway}px, ${y}px, 0) rotate(${rot}deg)`,
+              transform: `translate3d(${directionalSway}px, ${y}px, 0) rotate(${rot}deg)`,
               fontSize: `${effectiveSize}px`,
               opacity: (p.opacity ?? 0.8) * edgeOpacity,
               filter,

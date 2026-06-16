@@ -90,10 +90,10 @@ function Hero() {
 function Stat({ value, suffix = "", decimals = 0, label }: { value: number; suffix?: string; decimals?: number; label: string }) {
   return (
     <div>
-      <div className="text-4xl font-black leading-none text-gradient-brand sm:text-5xl lg:text-6xl">
+      <div className="text-5xl font-black leading-none text-gradient-brand sm:text-6xl lg:text-7xl">
         <NumberTicker value={value} suffix={suffix} decimalPlaces={decimals} />
       </div>
-      <div className="mt-2 text-xs font-bold uppercase tracking-wider text-muted-foreground sm:text-sm">{label}</div>
+      <div className="mt-2 text-sm font-bold uppercase tracking-wider text-muted-foreground">{label}</div>
     </div>
   );
 }
