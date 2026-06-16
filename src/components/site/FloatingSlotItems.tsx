@@ -44,7 +44,10 @@ export function FloatingSlotItems({
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollY, setScrollY] = useState(0);
   const [vh, setVh] = useState(typeof window !== "undefined" ? window.innerHeight : 800);
+  const [vw, setVw] = useState(typeof window !== "undefined" ? window.innerWidth : 1280);
   const rafRef = useRef<number | null>(null);
+
+  const isMobile = vw < 768;
 
   // The viewport "stage" cycles each item from below the fold up past the top.
   const stage = vh + 240;
@@ -59,23 +62,33 @@ export function FloatingSlotItems({
       // Place symbols on the left or right edge only so they never overlap content.
       const side = i % 2 === 0 ? "left" : "right";
       let leftVw: number;
-      if (side === "left") {
-        leftVw = rand() * 12; // 0-12vw
+      if (isMobile) {
+        // On mobile, push them mostly off-screen so they never cover text.
+        if (side === "left") {
+          leftVw = -8 + rand() * 6; // -8 to -2vw (partially off-screen left)
+        } else {
+          leftVw = 96 + rand() * 6; // 96 to 102vw (partially off-screen right)
+        }
       } else {
-        leftVw = 88 + rand() * 12; // 88-100vw
+        if (side === "left") {
+          leftVw = rand() * 12; // 0-12vw
+        } else {
+          leftVw = 88 + rand() * 12; // 88-100vw
+        }
       }
       out.push({
         ...base,
         id: i,
         left: leftVw,
         offset: rand() * stage,
-        drift: 20 + rand() * 60,
+        drift: isMobile ? 6 + rand() * 14 : 20 + rand() * 60,
         driftSpeed: 0.0008 + rand() * 0.0014,
         rotate: (rand() - 0.5) * 0.4,
       });
     }
     return out;
-  }, [items, density, stage]);
+  }, [items, density, stage, isMobile]);
+
 
   useEffect(() => {
     if (typeof window === "undefined") return;
