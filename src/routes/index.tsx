@@ -62,7 +62,7 @@ function Hero() {
               <a href={h.secondaryCta.href}>{h.secondaryCta.label}</a>
             </Button>
           </div>
-          <div className="mt-10 grid max-w-md grid-cols-3 gap-6 text-sm">
+          <div className="mt-10 grid max-w-2xl grid-cols-3 gap-3 sm:gap-7">
             <Stat value={40} suffix="+" label="Slot titles" />
             <Stat value={25} label="Markets" />
             <Stat value={99.9} suffix="%" decimals={1} label="Uptime" />
@@ -90,10 +90,10 @@ function Hero() {
 function Stat({ value, suffix = "", decimals = 0, label }: { value: number; suffix?: string; decimals?: number; label: string }) {
   return (
     <div>
-      <div className="text-3xl font-black text-gradient-brand">
+      <div className="text-4xl font-black leading-none text-gradient-brand sm:text-5xl lg:text-6xl">
         <NumberTicker value={value} suffix={suffix} decimalPlaces={decimals} />
       </div>
-      <div className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="mt-2 text-xs font-bold uppercase tracking-wider text-muted-foreground sm:text-sm">{label}</div>
     </div>
   );
 }

@@ -5,7 +5,8 @@ export { DEFAULT_FLOATING_ITEMS, type FloatingItem };
 
 type Placed = FloatingItem & {
   id: number;
-  left: number; // vw
+  side: "left" | "right";
+  inset: number; // vw from the matching side
   offset: number; // px initial offset
   drift: number; // horizontal sway amplitude px
   driftSpeed: number; // sway frequency
@@ -46,35 +47,22 @@ export function FloatingSlotItems({
   const placed = useMemo<Placed[]>(() => {
     const leftRand = seededRandom(1337);
     const rightRand = seededRandom(7331);
-    let count = Math.max(0, Math.round(effectiveItems.length * effectiveDensity));
-    // Force an even count so both sides are perfectly balanced.
-    if (count % 2 !== 0) count -= 1;
-    const perSide = Math.max(0, count / 2);
+    const count = Math.max(0, Math.round(effectiveItems.length * effectiveDensity));
+    // Duplicate one item when needed so both sides are always perfectly balanced.
+    const perSide = count > 0 ? Math.ceil(count / 2) : 0;
     const out: Placed[] = [];
     let id = 0;
 
     const place = (rand: () => number, side: "left" | "right") => {
       const base = effectiveItems[id % effectiveItems.length];
-      let leftVw: number;
-      if (isMobile) {
-        if (side === "left") {
-          leftVw = -8 + rand() * 6; // -8 to -2vw
-        } else {
-          leftVw = 96 + rand() * 6; // 96 to 102vw
-        }
-      } else {
-        if (side === "left") {
-          leftVw = -6 + rand() * 8; // -6 to 2vw
-        } else {
-          leftVw = 98 + rand() * 8; // 98 to 106vw
-        }
-      }
+      const inset = isMobile ? 0.5 + rand() * 2.5 : 1 + rand() * 3.5;
       out.push({
         ...base,
         id,
-        left: leftVw,
+        side,
+        inset,
         offset: rand() * stage,
-        drift: isMobile ? 6 + rand() * 14 : 20 + rand() * 60,
+        drift: isMobile ? 4 + rand() * 8 : 8 + rand() * 22,
         driftSpeed: 0.0008 + rand() * 0.0014,
         rotate: (rand() - 0.5) * 0.4,
       });
@@ -115,12 +103,16 @@ export function FloatingSlotItems({
     };
   }, []);
 
+  const sideMask = isMobile
+    ? "linear-gradient(to right, black 0%, black 22%, transparent 38%, transparent 62%, black 78%, black 100%)"
+    : "linear-gradient(to right, black 0%, black 14%, transparent 25%, transparent 75%, black 86%, black 100%)";
+
   return (
     <div
       ref={containerRef}
       aria-hidden
       className="pointer-events-none fixed inset-0 overflow-hidden"
-      style={{ zIndex: 10 }}
+      style={{ zIndex: 10, maskImage: sideMask, WebkitMaskImage: sideMask }}
     >
       {placed.map((p) => {
         const speed = p.speed ?? 0.6;
@@ -136,16 +128,27 @@ export function FloatingSlotItems({
           ? `0 0 12px hsl(${p.hue} 90% 60% / 0.8), 0 0 24px hsl(${p.hue} 90% 60% / 0.5)`
           : "0 0 12px rgba(255,255,255,0.6), 0 0 24px rgba(255,255,255,0.3)";
         const effectiveSize = isMobile ? Math.round((p.size ?? 40) * 0.6) : (p.size ?? 40);
+        const insetPx = (p.inset / 100) * vw;
+        const centerX = p.side === "left"
+          ? insetPx + sway + effectiveSize / 2
+          : vw - insetPx + sway - effectiveSize / 2;
+        const fadeStart = isMobile ? vw * 0.18 : Math.min(180, vw * 0.14);
+        const fadeEnd = isMobile ? vw * 0.34 : Math.min(340, vw * 0.26);
+        const fadeProgress = p.side === "left"
+          ? (centerX - fadeStart) / (fadeEnd - fadeStart)
+          : (vw - fadeStart - centerX) / (fadeEnd - fadeStart);
+        const edgeOpacity = Math.max(0, Math.min(1, 1 - fadeProgress));
+        const sidePosition = p.side === "left" ? { left: `${p.inset}vw` } : { right: `${p.inset}vw` };
         return (
           <span
             key={p.id}
             style={{
               position: "absolute",
-              left: `${p.left}vw`,
+              ...sidePosition,
               top: 0,
               transform: `translate3d(${sway}px, ${y}px, 0) rotate(${rot}deg)`,
               fontSize: `${effectiveSize}px`,
-              opacity: p.opacity ?? 0.8,
+              opacity: (p.opacity ?? 0.8) * edgeOpacity,
               filter,
               textShadow,
               willChange: "transform",
