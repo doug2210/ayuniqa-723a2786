@@ -118,7 +118,7 @@ export function FloatingSlotItems({
       ref={containerRef}
       aria-hidden
       className="pointer-events-none fixed inset-0 overflow-hidden"
-      style={{ zIndex: 1 }}
+      style={{ zIndex: 10 }}
     >
       {placed.map((p) => {
         const speed = p.speed ?? 0.6;
