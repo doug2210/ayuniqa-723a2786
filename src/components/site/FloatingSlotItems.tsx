@@ -58,6 +58,9 @@ export function FloatingSlotItems({
   const [vh, setVh] = useState(typeof window !== "undefined" ? window.innerHeight : 800);
   const rafRef = useRef<number | null>(null);
 
+  // The viewport "stage" cycles each item from below the fold up past the top.
+  const stage = vh + 240;
+
   // Build a stable layout of placed items (deterministic per render).
   const placed = useMemo<Placed[]>(() => {
     const rand = seededRandom(1337);
