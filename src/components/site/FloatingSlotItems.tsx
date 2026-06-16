@@ -12,21 +12,9 @@ export type FloatingItem = {
 };
 
 export const DEFAULT_FLOATING_ITEMS: FloatingItem[] = [
-  { symbol: "🍒", size: 48, speed: 0.55, opacity: 0.95, hue: 350 },
-  { symbol: "🍋", size: 44, speed: 0.7, opacity: 0.9, hue: 50 },
-  { symbol: "🔔", size: 50, speed: 0.45, opacity: 0.9, hue: 40 },
-  { symbol: "💎", size: 42, speed: 0.8, opacity: 1.0, hue: 190 },
-  { symbol: "7️⃣", size: 54, speed: 0.5, opacity: 0.95, hue: 0 },
-  { symbol: "⭐", size: 46, speed: 0.65, opacity: 0.9, hue: 45 },
-  { symbol: "🍀", size: 44, speed: 0.6, opacity: 0.95, hue: 130 },
-  { symbol: "🎰", size: 56, speed: 0.4, opacity: 0.9, hue: 280 },
-  { symbol: "🪙", size: 40, speed: 0.9, opacity: 0.95, hue: 45 },
-  { symbol: "🎲", size: 46, speed: 0.55, opacity: 0.9, hue: 310 },
-  { symbol: "👑", size: 48, speed: 0.5, opacity: 0.95, hue: 45 },
-  { symbol: "💰", size: 48, speed: 0.7, opacity: 0.95, hue: 130 },
-  { symbol: "🃏", size: 44, speed: 0.6, opacity: 0.9, hue: 220 },
-  { symbol: "🎯", size: 46, speed: 0.75, opacity: 0.95, hue: 30 },
-  { symbol: "🔥", size: 50, speed: 0.5, opacity: 0.9, hue: 15 },
+  { symbol: "💎", size: 110, speed: 0.7, opacity: 1.0, hue: 190 },
+  { symbol: "7️⃣", size: 130, speed: 0.5, opacity: 1.0, hue: 0 },
+  { symbol: "🎰", size: 140, speed: 0.45, opacity: 1.0, hue: 280 },
 ];
 
 type Placed = FloatingItem & {
@@ -48,7 +36,7 @@ function seededRandom(seed: number) {
 
 export function FloatingSlotItems({
   items = DEFAULT_FLOATING_ITEMS,
-  density = 2.2,
+  density = 1.2,
 }: {
   items?: FloatingItem[];
   density?: number;
