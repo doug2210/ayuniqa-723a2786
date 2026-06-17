@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as ContactRouteImport } from './routes/contact'
-import { Route as ClientZoneRouteImport } from './routes/client-zone'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -26,11 +25,6 @@ const ServicesRoute = ServicesRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ClientZoneRoute = ClientZoneRouteImport.update({
-  id: '/client-zone',
-  path: '/client-zone',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -63,7 +57,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
-  '/client-zone': typeof ClientZoneRoute
   '/contact': typeof ContactRoute
   '/services': typeof ServicesRoute
   '/games/$slug': typeof GamesSlugRoute
@@ -73,7 +66,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
-  '/client-zone': typeof ClientZoneRoute
   '/contact': typeof ContactRoute
   '/services': typeof ServicesRoute
   '/games/$slug': typeof GamesSlugRoute
@@ -84,7 +76,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
-  '/client-zone': typeof ClientZoneRoute
   '/contact': typeof ContactRoute
   '/services': typeof ServicesRoute
   '/games/$slug': typeof GamesSlugRoute
@@ -96,7 +87,6 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
-    | '/client-zone'
     | '/contact'
     | '/services'
     | '/games/$slug'
@@ -106,7 +96,6 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
-    | '/client-zone'
     | '/contact'
     | '/services'
     | '/games/$slug'
@@ -116,7 +105,6 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
-    | '/client-zone'
     | '/contact'
     | '/services'
     | '/games/$slug'
@@ -127,7 +115,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRoute
-  ClientZoneRoute: typeof ClientZoneRoute
   ContactRoute: typeof ContactRoute
   ServicesRoute: typeof ServicesRoute
   GamesSlugRoute: typeof GamesSlugRoute
@@ -148,13 +135,6 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/client-zone': {
-      id: '/client-zone'
-      path: '/client-zone'
-      fullPath: '/client-zone'
-      preLoaderRoute: typeof ClientZoneRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -199,7 +179,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
-  ClientZoneRoute: ClientZoneRoute,
   ContactRoute: ContactRoute,
   ServicesRoute: ServicesRoute,
   GamesSlugRoute: GamesSlugRoute,
@@ -208,13 +187,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
