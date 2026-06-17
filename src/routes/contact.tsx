@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollReveal } from "@/components/site/ScrollReveal";
 import { fireConfetti } from "@/components/site/ConfettiBurst";
 import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -24,6 +25,8 @@ export const Route = createFileRoute("/contact")({
 
 function Contact() {
   const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { config } = useSiteConfig();
 
   return (
@@ -59,8 +62,24 @@ function Contact() {
             ) : (
               <form
                 className="space-y-4"
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
+                  setBusy(true);
+                  setError(null);
+                  const form = e.currentTarget as HTMLFormElement;
+                  const fd = new FormData(form);
+                  const payload = {
+                    name: String(fd.get("name") ?? ""),
+                    company: String(fd.get("company") ?? "") || null,
+                    email: String(fd.get("email") ?? ""),
+                    message: String(fd.get("message") ?? ""),
+                  };
+                  const { error } = await supabase.from("contact_messages").insert(payload);
+                  setBusy(false);
+                  if (error) {
+                    setError(error.message);
+                    return;
+                  }
                   setSent(true);
                   fireConfetti();
                 }}
@@ -72,10 +91,11 @@ function Contact() {
                 <Field id="email" label="Work email" type="email" required />
                 <div>
                   <Label htmlFor="message">How can we help?</Label>
-                  <Textarea id="message" required rows={5} className="mt-1.5" />
+                  <Textarea id="message" name="message" required rows={5} className="mt-1.5" />
                 </div>
-                <Button type="submit" size="lg" variant="shimmer" className="w-full">
-                  Send message
+                {error && <p className="text-sm text-destructive">{error}</p>}
+                <Button type="submit" size="lg" variant="shimmer" className="w-full" disabled={busy}>
+                  {busy ? "Sending…" : "Send message"}
                 </Button>
               </form>
             )}
@@ -101,7 +121,7 @@ function Field({ id, label, type = "text", required }: { id: string; label: stri
   return (
     <div>
       <Label htmlFor={id}>{label}</Label>
-      <Input id={id} type={type} required={required} className="mt-1.5 h-11" />
+      <Input id={id} name={id} type={type} required={required} className="mt-1.5 h-11" />
     </div>
   );
 }
