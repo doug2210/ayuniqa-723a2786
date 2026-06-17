@@ -75,9 +75,9 @@ export function useGame(slug: string) {
 
 export type GameInput = Omit<DbGame, "id"> & { id?: string };
 
-function toRow(g: GameInput): Record<string, unknown> {
+function toRow(g: GameInput, includeId = true): Record<string, unknown> {
   return {
-    ...(g.id ? { id: g.id } : {}),
+    ...(includeId && g.id ? { id: g.id } : {}),
     slug: g.slug,
     title: g.title,
     tagline: g.tagline,
@@ -101,12 +101,25 @@ export function useUpsertGame() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (g: GameInput) => {
+      if (g.id) {
+        const { data, error } = await supabase
+          .from("games")
+          .update(toRow(g, false))
+          .eq("id", g.id)
+          .select()
+          .maybeSingle();
+        if (error) throw new Error(error.message);
+        if (!data) throw new Error("Game not found or you do not have permission to update it.");
+        return data;
+      }
+
       const { data, error } = await supabase
         .from("games")
-        .upsert(toRow(g), { onConflict: "slug" })
+        .upsert(toRow(g, false), { onConflict: "slug" })
         .select()
-        .single();
-      if (error) throw error;
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      if (!data) throw new Error("Game was not saved. Please confirm your admin access and try again.");
       return data;
     },
     onSuccess: () => {
