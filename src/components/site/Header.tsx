@@ -71,7 +71,7 @@ export function Header() {
 
       <div
         className={cn(
-          "overflow-hidden border-t border-border/60 md:hidden transition-all",
+          "overflow-hidden border-t border-border/60 bg-background/95 shadow-glow backdrop-blur-xl md:hidden transition-all",
           open ? "max-h-96" : "max-h-0",
         )}
       >

@@ -27,26 +27,42 @@ export function SiteConfigProvider({ children }: { children: ReactNode }) {
     } catch {
       // ignore
     }
+    let cancelled = false;
+    const applyRow = (row: { data: unknown } | null) => {
+      if (cancelled) return;
+      const value = row?.data;
+      const isEmpty =
+        typeof value === "object" && value !== null && Object.keys(value as object).length === 0;
+      if (value && !isEmpty) {
+        setConfigState(mergeConfig(value));
+      }
+      setLoaded(true);
+    };
+
     supabase
       .from("site_config")
       .select("data")
       .eq("id", SITE_CONFIG_ROW_ID)
       .maybeSingle()
-      .then(({ data, error }) => {
-        try {
-          if (error || !data?.data) return;
-          const isEmpty =
-            typeof data.data === "object" &&
-            data.data !== null &&
-            Object.keys(data.data as object).length === 0;
-          if (isEmpty) return;
-          setConfigState(mergeConfig(data.data));
-        } finally {
-          // Mark as loaded whether the fetch returned data, was empty, or errored —
-          // downstream components can then decide to fall back to defaults.
-          setLoaded(true);
-        }
-      });
+      .then(({ data }) => applyRow(data ?? null));
+
+    // Live updates: any admin save in any tab/device propagates instantly here.
+    const channel = supabase
+      .channel("site_config_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "site_config", filter: `id=eq.${SITE_CONFIG_ROW_ID}` },
+        (payload) => {
+          const next = (payload.new as { data?: unknown } | null) ?? null;
+          if (next && "data" in next) applyRow(next as { data: unknown });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      void supabase.removeChannel(channel);
+    };
   }, []);
 
   const setConfig = useCallback((next: SiteConfig | ((prev: SiteConfig) => SiteConfig)) => {
