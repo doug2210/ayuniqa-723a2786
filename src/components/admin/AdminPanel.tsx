@@ -342,10 +342,10 @@ function HeroEditor({
   return (
     <Tabs defaultValue="text">
       <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
-        <TabsTrigger value="text">Textos</TabsTrigger>
+        <TabsTrigger value="text">Text</TabsTrigger>
         <TabsTrigger value="stats">Stats</TabsTrigger>
         <TabsTrigger value="award">Badge</TabsTrigger>
-        <TabsTrigger value="stage">Palco</TabsTrigger>
+        <TabsTrigger value="stage">Stage</TabsTrigger>
       </TabsList>
       <TabsContent value="text" className="mt-4">
         <HeroTextEditor value={value} onChange={onChange} />
@@ -546,7 +546,7 @@ function HeroStageEditor({
             <SelectContent>
               <SelectItem value="character">Imagem custom (personagem)</SelectItem>
               <SelectItem value="reels">Reels animados</SelectItem>
-              <SelectItem value="none">Nenhum</SelectItem>
+              <SelectItem value="none">None</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -691,7 +691,7 @@ function StageSymbolRow({
             </SelectContent>
           </Select>
         </div>
-        <Button variant="ghost" size="icon" onClick={onRemove} aria-label="Remover">
+        <Button variant="ghost" size="icon" onClick={onRemove} aria-label="Remove">
           <Trash2 className="!size-4 text-destructive" />
         </Button>
       </div>
@@ -1121,7 +1121,7 @@ function ScreenshotsEditor({
       </div>
       {value.length === 0 && (
         <p className="rounded-lg border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
-          Nenhuma screenshot. Adicione URLs ou faça upload via campo de imagem.
+          No screenshots yet. Add a URL or upload one below.
         </p>
       )}
       <div className="space-y-2">
@@ -1146,7 +1146,7 @@ function ScreenshotsEditor({
                 variant="ghost"
                 onClick={() => onChange(value.filter((_, idx) => idx !== i))}
               >
-                <Trash2 className="!size-3.5 text-destructive" /> Remover
+                <Trash2 className="!size-3.5 text-destructive" /> Remove
               </Button>
             </div>
           </div>
@@ -1214,21 +1214,21 @@ function AboutEditor({
       <Card className="space-y-4 p-5">
         <div className="grid gap-3 sm:grid-cols-3">
           <div>
-            <Label>Título (prefixo)</Label>
+            <Label>Title (prefix)</Label>
             <Input
               value={value.titlePrefix}
               onChange={(e) => onChange({ ...value, titlePrefix: e.target.value })}
             />
           </div>
           <div>
-            <Label>Título (gradiente)</Label>
+            <Label>Title (accent / gradient)</Label>
             <Input
               value={value.titleAccent}
               onChange={(e) => onChange({ ...value, titleAccent: e.target.value })}
             />
           </div>
           <div>
-            <Label>Título (sufixo)</Label>
+            <Label>Title (suffix)</Label>
             <Input
               value={value.titleSuffix}
               onChange={(e) => onChange({ ...value, titleSuffix: e.target.value })}
@@ -1236,7 +1236,7 @@ function AboutEditor({
           </div>
         </div>
         <div>
-          <Label>Texto de abertura</Label>
+          <Label>Lead paragraph</Label>
           <Textarea
             rows={3}
             value={value.lead}
@@ -1263,14 +1263,14 @@ function AboutEditor({
               <Input value={s.value} onChange={(e) => updateStat(i, { value: e.target.value })} />
             </div>
             <div>
-              <Label className="text-xs">Rótulo</Label>
+              <Label className="text-xs">Label</Label>
               <Input value={s.label} onChange={(e) => updateStat(i, { label: e.target.value })} />
             </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => onChange({ ...value, stats: value.stats.filter((_, idx) => idx !== i) })}
-              aria-label="Remover stat"
+              aria-label="Remove stat"
             >
               <Trash2 className="!size-4 text-destructive" />
             </Button>
@@ -1280,13 +1280,13 @@ function AboutEditor({
 
       <Card className="space-y-3 p-5">
         <div className="flex items-center justify-between">
-          <h3 className="font-bold">Parágrafos ({value.paragraphs.length})</h3>
+          <h3 className="font-bold">Paragraphs ({value.paragraphs.length})</h3>
           <Button
             size="sm"
             variant="outline"
             onClick={() => onChange({ ...value, paragraphs: [...value.paragraphs, ""] })}
           >
-            <Plus className="!size-3.5" /> Add parágrafo
+            <Plus className="!size-3.5" /> Add paragraph
           </Button>
         </div>
         {value.paragraphs.map((p, i) => (
@@ -1298,7 +1298,7 @@ function AboutEditor({
                 size="sm"
                 onClick={() => onChange({ ...value, paragraphs: value.paragraphs.filter((_, idx) => idx !== i) })}
               >
-                <Trash2 className="!size-3.5 text-destructive" /> Remover
+                <Trash2 className="!size-3.5 text-destructive" /> Remove
               </Button>
             </div>
           </div>
@@ -1326,7 +1326,7 @@ function SocialEditor({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="font-bold">Redes sociais ({value.length})</h3>
+        <h3 className="font-bold">Social links ({value.length})</h3>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => onChange(DEFAULT_SOCIAL)}>
             <RotateCcw className="!size-3.5" /> Reset
@@ -1341,14 +1341,14 @@ function SocialEditor({
       </div>
       {value.length === 0 && (
         <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          Nenhum link. Clique em "Add link" para começar.
+          No links yet. Click "Add link" to start.
         </p>
       )}
       {value.map((s, i) => (
         <Card key={i} className="p-4">
           <div className="grid gap-3 sm:grid-cols-[180px,1fr,auto] sm:items-end">
             <div>
-              <Label className="text-xs">Plataforma</Label>
+              <Label className="text-xs">Platform</Label>
               <Select
                 value={s.platform}
                 onValueChange={(v) => update(i, { platform: v as SocialPlatform })}
@@ -1377,7 +1377,7 @@ function SocialEditor({
               variant="ghost"
               size="icon"
               onClick={() => onChange(value.filter((_, idx) => idx !== i))}
-              aria-label="Remover"
+              aria-label="Remove"
             >
               <Trash2 className="!size-4 text-destructive" />
             </Button>
