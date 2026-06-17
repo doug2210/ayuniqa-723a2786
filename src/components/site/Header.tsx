@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Menu, X, Lock } from "lucide-react";
+import { Menu, X, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -10,7 +10,6 @@ const links = [
   { to: "/games", label: "Games" },
   { to: "/services", label: "Services" },
   { to: "/about", label: "About" },
-  { to: "/contact", label: "Contact" },
 ] as const;
 
 export function Header() {
@@ -55,8 +54,8 @@ export function Header() {
 
         <div className="hidden md:block">
           <Button asChild variant="shimmer">
-            <Link to="/client-zone">
-              <Lock /> Client Zone
+            <Link to="/contact">
+              <Mail /> Contact
             </Link>
           </Button>
         </div>
@@ -88,8 +87,8 @@ export function Header() {
             </Link>
           ))}
           <Button asChild className="mt-2 bg-gradient-brand text-white">
-            <Link to="/client-zone" onClick={() => setOpen(false)}>
-              <Lock /> Client Zone
+            <Link to="/contact" onClick={() => setOpen(false)}>
+              <Mail /> Contact
             </Link>
           </Button>
         </div>

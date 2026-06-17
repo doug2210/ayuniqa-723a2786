@@ -151,6 +151,31 @@ export type ContactConfig = {
   compliance: string;
 };
 
+export type AboutStat = { value: string; label: string };
+
+export type AboutConfig = {
+  titlePrefix: string;
+  titleAccent: string;
+  titleSuffix: string;
+  lead: string;
+  stats: AboutStat[];
+  paragraphs: string[];
+};
+
+export const SOCIAL_PLATFORMS = [
+  "twitter",
+  "linkedin",
+  "instagram",
+  "facebook",
+  "youtube",
+  "tiktok",
+  "github",
+  "discord",
+  "website",
+] as const;
+export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number];
+export type SocialLink = { platform: SocialPlatform; url: string; label?: string };
+
 export type FloatingConfig = {
   items: FloatingItem[];
   density: number;
@@ -162,6 +187,8 @@ export type SiteConfig = {
   floating: FloatingConfig;
   games: GameOverride[]; // sparse; merged with defaults by slug
   contact: ContactConfig;
+  about: AboutConfig;
+  social: SocialLink[];
 };
 
 export const DEFAULT_HERO: HeroConfig = {
@@ -186,12 +213,36 @@ export const DEFAULT_CONTACT: ContactConfig = {
   compliance: "B2B only. 18+. We do not offer real-money gambling to end users.",
 };
 
+export const DEFAULT_ABOUT: AboutConfig = {
+  titlePrefix: "Crafted by ",
+  titleAccent: "slot people",
+  titleSuffix: ", for slot people.",
+  lead: "Ayuniqa is a B2B iGaming studio founded in 2021 by veterans from some of the industry's biggest names. We obsess over the math, the moment of anticipation, and the polish that turns a spin into a story.",
+  stats: [
+    { value: "40+", label: "Titles shipped" },
+    { value: "60", label: "Team members" },
+    { value: "25", label: "Regulated markets" },
+  ],
+  paragraphs: [
+    "Our team blends senior artists, mathematicians, and engineers under one roof. We believe great slots come from tight feedback loops — designers sitting next to mathematicians, math reviewed against player behaviour, art iterated alongside engine performance.",
+    "We work with licensed operators and aggregators across Europe, LATAM, and emerging markets. Every release is certified for the jurisdictions we serve.",
+  ],
+};
+
+export const DEFAULT_SOCIAL: SocialLink[] = [
+  { platform: "linkedin", url: "https://www.linkedin.com/" },
+  { platform: "twitter", url: "https://twitter.com/" },
+  { platform: "instagram", url: "https://www.instagram.com/" },
+];
+
 export const DEFAULT_SITE_CONFIG: SiteConfig = {
   version: 1,
   hero: DEFAULT_HERO,
   floating: { items: DEFAULT_FLOATING_ITEMS, density: 1.2 },
   games: [],
   contact: DEFAULT_CONTACT,
+  about: DEFAULT_ABOUT,
+  social: DEFAULT_SOCIAL,
 };
 
 export const SITE_CONFIG_KEY = "ayuniqa.siteConfig.v1";
@@ -243,6 +294,19 @@ export function mergeConfig(stored: unknown): SiteConfig {
     },
     games: Array.isArray(s.games) ? s.games : [],
     contact: { ...DEFAULT_CONTACT, ...(s.contact ?? {}) },
+    about: {
+      ...DEFAULT_ABOUT,
+      ...(s.about ?? {}),
+      stats:
+        Array.isArray(s.about?.stats) && s.about!.stats.length > 0
+          ? s.about!.stats
+          : DEFAULT_ABOUT.stats,
+      paragraphs:
+        Array.isArray(s.about?.paragraphs) && s.about!.paragraphs.length > 0
+          ? s.about!.paragraphs
+          : DEFAULT_ABOUT.paragraphs,
+    },
+    social: Array.isArray(s.social) ? s.social : DEFAULT_SOCIAL,
   };
 }
 

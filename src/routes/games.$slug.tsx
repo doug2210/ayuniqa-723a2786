@@ -118,9 +118,6 @@ function GameDetail() {
               <Button asChild size="lg" variant="shimmer">
                 <Link to="/contact">Request demo</Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to="/client-zone">Get assets</Link>
-              </Button>
             </div>
           </div>
         </ScrollReveal>
