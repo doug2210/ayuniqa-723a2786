@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Check } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
@@ -12,12 +12,11 @@ import { GameAssetsBrowser } from "@/components/site/GameAssetsBrowser";
 
 export const Route = createFileRoute("/games/$slug")({
   loader: ({ params }) => {
-    const game = defaultGamesList.find((g) => g.slug === params.slug);
-    if (!game) throw notFound();
-    return { game };
+    const game = defaultGamesList.find((g) => g.slug === params.slug) ?? null;
+    return { game, slug: params.slug };
   },
   head: ({ loaderData }) => ({
-    meta: loaderData
+    meta: loaderData?.game
       ? [
           { title: `${loaderData.game.title} — Ayuniqa` },
           { name: "description", content: loaderData.game.description },
@@ -49,9 +48,22 @@ export const Route = createFileRoute("/games/$slug")({
 });
 
 function GameDetail() {
-  const { game: defaultGame } = Route.useLoaderData();
+  const { game: defaultGame, slug } = Route.useLoaderData();
   const { config } = useSiteConfig();
-  const game = mergedGames(config.games).find((g) => g.slug === defaultGame.slug) ?? defaultGame;
+  const merged = mergedGames(config.games);
+  const game = merged.find((g) => g.slug === (defaultGame?.slug ?? slug)) ?? defaultGame;
+  if (!game) {
+    return (
+      <SiteLayout>
+        <div className="mx-auto max-w-3xl px-4 py-32 text-center">
+          <h1 className="text-4xl font-black">Game not found</h1>
+          <Button asChild className="mt-6 bg-gradient-brand text-white">
+            <Link to="/games">Back to games</Link>
+          </Button>
+        </div>
+      </SiteLayout>
+    );
+  }
   return (
     <SiteLayout>
       <section className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
