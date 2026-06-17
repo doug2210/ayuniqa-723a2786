@@ -230,7 +230,7 @@ function CTA() {
               <Link to="/contact">Get in touch</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="border-white/40 bg-white/0 text-white hover:bg-white/10 hover:text-white">
-              <Link to="/client-zone">Client Zone</Link>
+              <Link to="/games">Browse games</Link>
             </Button>
           </div>
         </div>
