@@ -20,6 +20,11 @@ export function SiteConfigProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Supabase is the single source of truth. No localStorage hydration —
     // stale cached icons must never override what admins saved.
+    try {
+      window.localStorage.removeItem("ayuniqa.siteConfig.v1");
+    } catch {
+      // ignore
+    }
     supabase
       .from("site_config")
       .select("data")
