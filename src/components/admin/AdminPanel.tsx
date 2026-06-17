@@ -33,7 +33,7 @@ import {
   type GameInput,
   type DbGame,
 } from "@/lib/games-api";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DEFAULT_HERO,
   DEFAULT_CONTACT,
@@ -787,7 +787,54 @@ function GamesEditor() {
   const { data: games = [], isLoading } = useGames();
   const upsert = useUpsertGame();
   const del = useDeleteGame();
+  const DRAFT_KEY = "ayuniqa.admin.gameDraft.v1";
   const [editing, setEditing] = useState<GameInput | null>(null);
+
+  // Restore in-progress draft after accidental reloads / remounts.
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as GameInput;
+        if (parsed && typeof parsed === "object") setEditing(parsed);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Persist draft on every change so uploads-in-progress survive reloads.
+  useEffect(() => {
+    try {
+      if (editing) {
+        window.localStorage.setItem(DRAFT_KEY, JSON.stringify(editing));
+      } else {
+        window.localStorage.removeItem(DRAFT_KEY);
+      }
+    } catch {
+      // ignore quota / privacy errors
+    }
+  }, [editing]);
+
+  // Warn before navigating away with unsaved work.
+  useEffect(() => {
+    if (!editing) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [editing]);
+
+  const clearDraft = () => {
+    try {
+      window.localStorage.removeItem(DRAFT_KEY);
+    } catch {
+      // ignore
+    }
+    setEditing(null);
+  };
 
   const startEdit = (g: DbGame) => setEditing({ ...g });
   const startNew = () => setEditing(emptyGame());
@@ -797,11 +844,14 @@ function GamesEditor() {
       <GameForm
         value={editing}
         onChange={setEditing}
-        onCancel={() => setEditing(null)}
+        onCancel={() => {
+          if (!confirm("Discard unsaved changes?")) return;
+          clearDraft();
+        }}
         onSave={async () => {
           try {
             await upsert.mutateAsync(editing);
-            setEditing(null);
+            clearDraft();
           } catch (err) {
             alert("Save failed: " + (err instanceof Error ? err.message : String(err)));
           }
