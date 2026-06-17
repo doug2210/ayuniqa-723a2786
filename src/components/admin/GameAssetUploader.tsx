@@ -75,21 +75,27 @@ export function GameAssetUploader({
     if (list.length === 0) return;
     setError(null);
     setUploading(list.length);
-    const uploaded: GameAsset[] = [];
+    // Snapshot the current assets once; we append to this base after each
+    // successful upload so partial progress is never lost if the user closes
+    // the tab or the form re-renders mid-batch.
+    let current = assets.slice();
     try {
       for (const f of list) {
         try {
           const asset = await uploadOne(f, overrideFolder);
-          uploaded.push(asset);
+          current = [...current, asset];
+          // Persist progress immediately after each file.
+          onChange(current);
         } catch (err) {
           console.error("[game-assets] upload failed for", f.name, err);
           setError(
             (err as Error)?.message ??
-              `Upload de "${f.name}" falhou. Verifique se você está logado como admin.`,
+              `Upload of "${f.name}" failed. Make sure you're signed in as admin.`,
           );
+        } finally {
+          setUploading((n) => Math.max(0, n - 1));
         }
       }
-      if (uploaded.length > 0) onChange([...assets, ...uploaded]);
     } finally {
       setUploading(0);
     }

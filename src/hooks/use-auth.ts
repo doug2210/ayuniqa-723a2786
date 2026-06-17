@@ -11,12 +11,17 @@ export function useAuth() {
   useEffect(() => {
     let mounted = true;
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       if (!mounted) return;
+      // Only react to identity transitions. TOKEN_REFRESHED and INITIAL_SESSION
+      // fire frequently (tab focus, hourly refresh) and would re-render the
+      // whole admin tree mid-upload, potentially losing in-progress work.
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") {
+        return;
+      }
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        // Defer role check to avoid deadlocks inside the auth callback
         setTimeout(() => {
           supabase
             .rpc("has_role", { _user_id: s.user.id, _role: "admin" })
