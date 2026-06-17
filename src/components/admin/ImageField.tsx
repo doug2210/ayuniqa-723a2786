@@ -3,6 +3,17 @@ import { Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+
+const BUCKET = "site-assets";
+
+function sanitize(name: string): string {
+  return name.replace(/[^a-zA-Z0-9._-]/g, "_");
+}
+
+function randomId() {
+  return Math.random().toString(36).slice(2, 10);
+}
 
 export function ImageField({
   label,
@@ -21,25 +32,27 @@ export function ImageField({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFile = async (file: File) => {
-    const isGif = file.type === "image/gif";
-    const limit = isGif ? 4_000_000 : 1_500_000;
-    if (file.size > limit) {
-      alert(
-        `Arquivo maior que ${Math.round(limit / 1_000_000)}MB. ` +
-          "O armazenamento local pode falhar — prefira colar uma URL hospedada."
-      );
-    }
     setBusy(true);
+    setError(null);
     try {
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(file);
-      });
-      onChange(dataUrl);
+      const path = `site/${randomId()}-${sanitize(file.name)}`;
+      const { error: upErr } = await supabase.storage
+        .from(BUCKET)
+        .upload(path, file, {
+          contentType: file.type || undefined,
+          upsert: false,
+          cacheControl: "31536000",
+        });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
+      onChange(pub.publicUrl);
+    } catch (err) {
+      const msg = (err as Error)?.message ?? "Upload failed.";
+      setError(msg);
+      console.error("[ImageField] upload failed:", err);
     } finally {
       setBusy(false);
     }
@@ -74,6 +87,7 @@ export function ImageField({
           </Button>
         )}
       </div>
+      {error && <p className="text-xs text-destructive">{error}</p>}
       {value && (
         <div className="mt-2 overflow-hidden rounded-lg border border-border bg-muted/30 p-2">
           <img src={value} alt="" className="mx-auto h-32 w-auto object-contain" />
