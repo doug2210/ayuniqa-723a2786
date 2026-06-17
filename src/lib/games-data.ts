@@ -15,6 +15,21 @@ export type Game = {
   cover: string;
   description: string;
   features: string[];
+  trailerUrl?: string | null;
+  demoUrl?: string | null;
+  screenshots?: string[];
+  assets?: GameAsset[];
+};
+
+export type GameAsset = {
+  id: string;
+  name: string;
+  folder?: string | null;
+  url: string;
+  /** Storage object path inside the `game-assets` bucket. */
+  path: string;
+  size?: number;
+  contentType?: string | null;
 };
 
 export const games: Game[] = [

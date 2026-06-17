@@ -1,4 +1,4 @@
-import { games as defaultGames, type Game } from "@/lib/games-data";
+import { games as defaultGames, type Game, type GameAsset } from "@/lib/games-data";
 
 export type FloatingItem = {
   symbol: string;
@@ -134,8 +134,14 @@ export type HeroConfig = {
   stage: HeroStageConfig;
 };
 
-export type GameOverride = Partial<Pick<Game, "title" | "tagline" | "description" | "rtp" | "cover">> & {
+export type GameOverride = Partial<
+  Pick<Game, "title" | "tagline" | "description" | "rtp" | "cover">
+> & {
   slug: string;
+  trailerUrl?: string | null;
+  demoUrl?: string | null;
+  screenshots?: string[];
+  assets?: GameAsset[];
 };
 
 export type ContactConfig = {
@@ -247,9 +253,14 @@ export function mergedGames(overrides: GameOverride[]): Game[] {
   return defaultGames.map((g) => {
     const o = map.get(g.slug);
     if (!o) return g;
-    // Strip undefined overrides so they don't blank-out defaults.
+    // Strip undefined/empty overrides so they don't blank-out defaults.
+    // Arrays and explicit null are preserved (used for screenshots/assets/trailer/demo).
     const clean = Object.fromEntries(
-      Object.entries(o).filter(([, v]) => v !== undefined && v !== ""),
+      Object.entries(o).filter(([, v]) => {
+        if (v === undefined) return false;
+        if (typeof v === "string" && v === "") return false;
+        return true;
+      }),
     );
     return { ...g, ...clean };
   });
