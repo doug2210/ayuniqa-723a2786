@@ -183,7 +183,6 @@ export function GameAssetUploader({
             className="hidden"
             // @ts-expect-error non-standard attribute
             webkitdirectory=""
-            // @ts-expect-error non-standard attribute
             directory=""
             onChange={(e) => {
               if (e.target.files?.length) void handleFiles(e.target.files);
