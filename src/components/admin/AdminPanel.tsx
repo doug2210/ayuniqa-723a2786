@@ -981,3 +981,198 @@ function ContactEditor({
     </Card>
   );
 }
+
+/* ---------- About editor ---------- */
+
+function AboutEditor({
+  value,
+  onChange,
+}: {
+  value: AboutConfig;
+  onChange: (next: AboutConfig) => void;
+}) {
+  const updateStat = (i: number, patch: Partial<AboutStat>) =>
+    onChange({
+      ...value,
+      stats: value.stats.map((s, idx) => (idx === i ? { ...s, ...patch } : s)),
+    });
+  const updateParagraph = (i: number, text: string) =>
+    onChange({ ...value, paragraphs: value.paragraphs.map((p, idx) => (idx === i ? text : p)) });
+  return (
+    <div className="space-y-6">
+      <Card className="space-y-4 p-5">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div>
+            <Label>Título (prefixo)</Label>
+            <Input
+              value={value.titlePrefix}
+              onChange={(e) => onChange({ ...value, titlePrefix: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label>Título (gradiente)</Label>
+            <Input
+              value={value.titleAccent}
+              onChange={(e) => onChange({ ...value, titleAccent: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label>Título (sufixo)</Label>
+            <Input
+              value={value.titleSuffix}
+              onChange={(e) => onChange({ ...value, titleSuffix: e.target.value })}
+            />
+          </div>
+        </div>
+        <div>
+          <Label>Texto de abertura</Label>
+          <Textarea
+            rows={3}
+            value={value.lead}
+            onChange={(e) => onChange({ ...value, lead: e.target.value })}
+          />
+        </div>
+      </Card>
+
+      <Card className="space-y-3 p-5">
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold">Stats ({value.stats.length})</h3>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onChange({ ...value, stats: [...value.stats, { value: "10+", label: "Novo" }] })}
+          >
+            <Plus className="!size-3.5" /> Add stat
+          </Button>
+        </div>
+        {value.stats.map((s, i) => (
+          <div key={i} className="grid gap-2 sm:grid-cols-[1fr,2fr,auto] sm:items-end">
+            <div>
+              <Label className="text-xs">Valor</Label>
+              <Input value={s.value} onChange={(e) => updateStat(i, { value: e.target.value })} />
+            </div>
+            <div>
+              <Label className="text-xs">Rótulo</Label>
+              <Input value={s.label} onChange={(e) => updateStat(i, { label: e.target.value })} />
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onChange({ ...value, stats: value.stats.filter((_, idx) => idx !== i) })}
+              aria-label="Remover stat"
+            >
+              <Trash2 className="!size-4 text-destructive" />
+            </Button>
+          </div>
+        ))}
+      </Card>
+
+      <Card className="space-y-3 p-5">
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold">Parágrafos ({value.paragraphs.length})</h3>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onChange({ ...value, paragraphs: [...value.paragraphs, ""] })}
+          >
+            <Plus className="!size-3.5" /> Add parágrafo
+          </Button>
+        </div>
+        {value.paragraphs.map((p, i) => (
+          <div key={i} className="space-y-1">
+            <Textarea rows={3} value={p} onChange={(e) => updateParagraph(i, e.target.value)} />
+            <div className="text-right">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onChange({ ...value, paragraphs: value.paragraphs.filter((_, idx) => idx !== i) })}
+              >
+                <Trash2 className="!size-3.5 text-destructive" /> Remover
+              </Button>
+            </div>
+          </div>
+        ))}
+      </Card>
+
+      <Button variant="ghost" size="sm" onClick={() => onChange(DEFAULT_ABOUT)}>
+        <RotateCcw className="!size-3.5" /> Reset About
+      </Button>
+    </div>
+  );
+}
+
+/* ---------- Social editor ---------- */
+
+function SocialEditor({
+  value,
+  onChange,
+}: {
+  value: SocialLink[];
+  onChange: (next: SocialLink[]) => void;
+}) {
+  const update = (i: number, patch: Partial<SocialLink>) =>
+    onChange(value.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold">Redes sociais ({value.length})</h3>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => onChange(DEFAULT_SOCIAL)}>
+            <RotateCcw className="!size-3.5" /> Reset
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => onChange([...value, { platform: "website", url: "https://" }])}
+          >
+            <Plus className="!size-3.5" /> Add link
+          </Button>
+        </div>
+      </div>
+      {value.length === 0 && (
+        <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+          Nenhum link. Clique em "Add link" para começar.
+        </p>
+      )}
+      {value.map((s, i) => (
+        <Card key={i} className="p-4">
+          <div className="grid gap-3 sm:grid-cols-[180px,1fr,auto] sm:items-end">
+            <div>
+              <Label className="text-xs">Plataforma</Label>
+              <Select
+                value={s.platform}
+                onValueChange={(v) => update(i, { platform: v as SocialPlatform })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SOCIAL_PLATFORMS.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {p}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">URL</Label>
+              <Input
+                value={s.url}
+                onChange={(e) => update(i, { url: e.target.value })}
+                placeholder="https://..."
+              />
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onChange(value.filter((_, idx) => idx !== i))}
+              aria-label="Remover"
+            >
+              <Trash2 className="!size-4 text-destructive" />
+            </Button>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
