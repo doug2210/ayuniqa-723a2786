@@ -167,10 +167,7 @@ export function AdminPanel() {
         </TabsContent>
 
         <TabsContent value="games" className="mt-6">
-          <GamesEditor
-            value={config.games}
-            onChange={(next) => setConfig((c) => ({ ...c, games: next }))}
-          />
+          <GamesEditor />
         </TabsContent>
 
         <TabsContent value="contact" className="mt-6">
