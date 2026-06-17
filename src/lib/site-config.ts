@@ -1,5 +1,3 @@
-import { games as defaultGames, type Game, type GameAsset } from "@/lib/games-data";
-
 export type FloatingItem = {
   symbol: string;
   size?: number;
@@ -134,16 +132,6 @@ export type HeroConfig = {
   stage: HeroStageConfig;
 };
 
-export type GameOverride = Partial<
-  Pick<Game, "title" | "tagline" | "description" | "rtp" | "cover">
-> & {
-  slug: string;
-  trailerUrl?: string | null;
-  demoUrl?: string | null;
-  screenshots?: string[];
-  assets?: GameAsset[];
-};
-
 export type ContactConfig = {
   email: string;
   phone: string;
@@ -185,7 +173,6 @@ export type SiteConfig = {
   version: 1;
   hero: HeroConfig;
   floating: FloatingConfig;
-  games: GameOverride[]; // sparse; merged with defaults by slug
   contact: ContactConfig;
   about: AboutConfig;
   social: SocialLink[];
@@ -239,7 +226,6 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
   version: 1,
   hero: DEFAULT_HERO,
   floating: { items: DEFAULT_FLOATING_ITEMS, density: 1.2 },
-  games: [],
   contact: DEFAULT_CONTACT,
   about: DEFAULT_ABOUT,
   social: DEFAULT_SOCIAL,
@@ -292,7 +278,6 @@ export function mergeConfig(stored: unknown): SiteConfig {
         : DEFAULT_FLOATING_ITEMS,
       density: typeof s.floating?.density === "number" ? s.floating.density : 1.2,
     },
-    games: Array.isArray(s.games) ? s.games : [],
     contact: { ...DEFAULT_CONTACT, ...(s.contact ?? {}) },
     about: {
       ...DEFAULT_ABOUT,
@@ -308,26 +293,6 @@ export function mergeConfig(stored: unknown): SiteConfig {
     },
     social: Array.isArray(s.social) ? s.social : DEFAULT_SOCIAL,
   };
-}
-
-/** Apply game overrides on top of defaults, preserving order of defaults. */
-export function mergedGames(overrides: GameOverride[]): Game[] {
-  if (!overrides || overrides.length === 0) return defaultGames;
-  const map = new Map(overrides.map((o) => [o.slug, o]));
-  return defaultGames.map((g) => {
-    const o = map.get(g.slug);
-    if (!o) return g;
-    // Strip undefined/empty overrides so they don't blank-out defaults.
-    // Arrays and explicit null are preserved (used for screenshots/assets/trailer/demo).
-    const clean = Object.fromEntries(
-      Object.entries(o).filter(([, v]) => {
-        if (v === undefined) return false;
-        if (typeof v === "string" && v === "") return false;
-        return true;
-      }),
-    );
-    return { ...g, ...clean };
-  });
 }
 
 export function loadConfig(): SiteConfig {

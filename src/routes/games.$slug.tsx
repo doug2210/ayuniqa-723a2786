@@ -2,29 +2,17 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Check } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
-import { games as defaultGamesList } from "@/lib/games-data";
-import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
-import { mergedGames } from "@/lib/site-config";
+import { useGame } from "@/lib/games-api";
 import { ScrollReveal } from "@/components/site/ScrollReveal";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import { GameTrailer, GameScreenshots, PlayDemoButton } from "@/components/site/GameMedia";
 import { GameAssetsBrowser } from "@/components/site/GameAssetsBrowser";
 
 export const Route = createFileRoute("/games/$slug")({
-  loader: ({ params }) => {
-    const game = defaultGamesList.find((g) => g.slug === params.slug) ?? null;
-    return { game, slug: params.slug };
-  },
-  head: ({ loaderData }) => ({
-    meta: loaderData?.game
-      ? [
-          { title: `${loaderData.game.title} — Ayuniqa` },
-          { name: "description", content: loaderData.game.description },
-          { property: "og:title", content: `${loaderData.game.title} — Ayuniqa` },
-          { property: "og:description", content: loaderData.game.description },
-          { property: "og:image", content: loaderData.game.cover },
-        ]
-      : [],
+  head: ({ params }) => ({
+    meta: [
+      { title: `${params.slug} — Ayuniqa` },
+    ],
   }),
   notFoundComponent: () => (
     <SiteLayout>
@@ -48,10 +36,17 @@ export const Route = createFileRoute("/games/$slug")({
 });
 
 function GameDetail() {
-  const { game: defaultGame, slug } = Route.useLoaderData();
-  const { config } = useSiteConfig();
-  const merged = mergedGames(config.games);
-  const game = merged.find((g) => g.slug === (defaultGame?.slug ?? slug)) ?? defaultGame;
+  const { slug } = Route.useParams();
+  const { game, isLoading } = useGame(slug);
+  if (isLoading) {
+    return (
+      <SiteLayout>
+        <div className="mx-auto max-w-3xl px-4 py-32 text-center text-muted-foreground">
+          Loading game…
+        </div>
+      </SiteLayout>
+    );
+  }
   if (!game) {
     return (
       <SiteLayout>
@@ -77,7 +72,7 @@ function GameDetail() {
             <div className="absolute inset-0 -z-10 rounded-[2.5rem] bg-gradient-warm opacity-30 blur-3xl" />
             <div className="group relative overflow-hidden rounded-3xl">
               <BorderBeam size={280} duration={9} />
-              <img src={game.cover} alt={game.title} width={1024} height={1024} className="w-full rounded-3xl shadow-glow transition-transform duration-700 group-hover:scale-[1.03]" />
+              <img src={game.cover_url} alt={game.title} width={1024} height={1024} className="w-full rounded-3xl shadow-glow transition-transform duration-700 group-hover:scale-[1.03]" />
             </div>
           </div>
         </ScrollReveal>
@@ -114,7 +109,7 @@ function GameDetail() {
             </div>
 
             <div className="mt-10 flex flex-wrap gap-3">
-              <PlayDemoButton url={game.demoUrl} title={game.title} />
+              <PlayDemoButton url={game.demo_url} title={game.title} />
               <Button asChild size="lg" variant="shimmer">
                 <Link to="/contact">Request demo</Link>
               </Button>
@@ -123,13 +118,13 @@ function GameDetail() {
         </ScrollReveal>
       </section>
 
-      {game.trailerUrl && (
+      {game.trailer_url && (
         <section className="mx-auto max-w-5xl px-4 pb-12 sm:px-6 lg:px-8">
           <ScrollReveal animation="fade-up">
             <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">
               Trailer
             </h3>
-            <GameTrailer url={game.trailerUrl} title={game.title} />
+            <GameTrailer url={game.trailer_url} title={game.title} />
           </ScrollReveal>
         </section>
       )}

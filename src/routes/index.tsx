@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Sparkles, Gamepad2, Globe, ShieldCheck, Zap, Trophy } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
-import { games } from "@/lib/games-data";
 import { HeroStage } from "@/components/site/HeroStage";
 import { ScrollReveal } from "@/components/site/ScrollReveal";
 import { Meteors } from "@/components/magicui/meteors";
@@ -12,7 +11,7 @@ import { BorderBeam } from "@/components/magicui/border-beam";
 import { TiltCard } from "@/components/site/TiltCard";
 import { confettiFromEvent } from "@/components/site/ConfettiBurst";
 import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
-import { mergedGames } from "@/lib/site-config";
+import { useGames } from "@/lib/games-api";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -131,8 +130,7 @@ function Strengths() {
 }
 
 function FeaturedGames() {
-  const { config } = useSiteConfig();
-  const games = mergedGames(config.games);
+  const { data: games = [] } = useGames();
   return (
     <section className="bg-secondary/40 py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -148,7 +146,7 @@ function FeaturedGames() {
           </div>
         </ScrollReveal>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {games.map((g, i) => (
+          {games.slice(0, 4).map((g, i) => (
             <ScrollReveal key={g.slug} animation="fade-up" delay={i * 150}>
               <Link
                 to="/games/$slug"
@@ -156,7 +154,7 @@ function FeaturedGames() {
                 className="group block overflow-hidden rounded-2xl border border-border bg-card shadow-card transition-smooth hover:-translate-y-1 hover:shadow-glow"
               >
                 <div className="relative aspect-square overflow-hidden bg-gradient-warm">
-                  <img src={g.cover} alt={g.title} loading="lazy" width={1024} height={1024} className="h-full w-full object-cover transition-smooth group-hover:scale-105" />
+                  <img src={g.cover_url} alt={g.title} loading="lazy" width={1024} height={1024} className="h-full w-full object-cover transition-smooth group-hover:scale-105" />
                   <span className="absolute right-3 top-3 rounded-full bg-[color:var(--brand-yellow)] px-2 py-0.5 text-[10px] font-bold text-[color:var(--brand-grey)]">
                     {g.volatility}
                   </span>

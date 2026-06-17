@@ -23,7 +23,17 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
 import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
-import { games as defaultGames } from "@/lib/games-data";
+import {
+  useGames,
+  useUpsertGame,
+  useDeleteGame,
+  emptyGame,
+  GAME_CATEGORIES,
+  GAME_VOLATILITIES,
+  type GameInput,
+  type DbGame,
+} from "@/lib/games-api";
+import { useState } from "react";
 import {
   DEFAULT_HERO,
   DEFAULT_CONTACT,
@@ -36,7 +46,6 @@ import {
   SOCIAL_PLATFORMS,
   STAGE_ICON_NAMES,
   type FloatingConfig,
-  type GameOverride,
   type SiteConfig,
   type HeroStageConfig,
   type HeroStageSymbol,
@@ -158,10 +167,7 @@ export function AdminPanel() {
         </TabsContent>
 
         <TabsContent value="games" className="mt-6">
-          <GamesEditor
-            value={config.games}
-            onChange={(next) => setConfig((c) => ({ ...c, games: next }))}
-          />
+          <GamesEditor />
         </TabsContent>
 
         <TabsContent value="contact" className="mt-6">
@@ -336,10 +342,10 @@ function HeroEditor({
   return (
     <Tabs defaultValue="text">
       <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
-        <TabsTrigger value="text">Textos</TabsTrigger>
+        <TabsTrigger value="text">Text</TabsTrigger>
         <TabsTrigger value="stats">Stats</TabsTrigger>
         <TabsTrigger value="award">Badge</TabsTrigger>
-        <TabsTrigger value="stage">Palco</TabsTrigger>
+        <TabsTrigger value="stage">Stage</TabsTrigger>
       </TabsList>
       <TabsContent value="text" className="mt-4">
         <HeroTextEditor value={value} onChange={onChange} />
@@ -540,7 +546,7 @@ function HeroStageEditor({
             <SelectContent>
               <SelectItem value="character">Imagem custom (personagem)</SelectItem>
               <SelectItem value="reels">Reels animados</SelectItem>
-              <SelectItem value="none">Nenhum</SelectItem>
+              <SelectItem value="none">None</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -685,7 +691,7 @@ function StageSymbolRow({
             </SelectContent>
           </Select>
         </div>
-        <Button variant="ghost" size="icon" onClick={onRemove} aria-label="Remover">
+        <Button variant="ghost" size="icon" onClick={onRemove} aria-label="Remove">
           <Trash2 className="!size-4 text-destructive" />
         </Button>
       </div>
@@ -777,109 +783,314 @@ function SliderField({
 
 /* ---------- Games editor ---------- */
 
-function GamesEditor({
-  value,
-  onChange,
-}: {
-  value: GameOverride[];
-  onChange: (next: GameOverride[]) => void;
-}) {
-  const byslug = new Map(value.map((o) => [o.slug, o]));
-  const getOverride = (slug: string): GameOverride => byslug.get(slug) ?? { slug };
+function GamesEditor() {
+  const { data: games = [], isLoading } = useGames();
+  const upsert = useUpsertGame();
+  const del = useDeleteGame();
+  const [editing, setEditing] = useState<GameInput | null>(null);
 
-  const updateGame = (slug: string, patch: Partial<GameOverride>) => {
-    const existing = byslug.get(slug);
-    const next: GameOverride = { ...(existing ?? { slug }), ...patch, slug };
-    const others = value.filter((o) => o.slug !== slug);
-    onChange([...others, next]);
-  };
-  const resetGame = (slug: string) => onChange(value.filter((o) => o.slug !== slug));
+  const startEdit = (g: DbGame) => setEditing({ ...g });
+  const startNew = () => setEditing(emptyGame());
+
+  if (editing) {
+    return (
+      <GameForm
+        value={editing}
+        onChange={setEditing}
+        onCancel={() => setEditing(null)}
+        onSave={async () => {
+          try {
+            await upsert.mutateAsync(editing);
+            setEditing(null);
+          } catch (err) {
+            alert("Save failed: " + (err instanceof Error ? err.message : String(err)));
+          }
+        }}
+        saving={upsert.isPending}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        Override per-game fields. Empty fields fall back to the built-in defaults.
-      </p>
-      {defaultGames.map((g) => {
-        const o = getOverride(g.slug);
-        return (
-          <Card key={g.slug} className="space-y-3 p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-xs uppercase tracking-wider text-muted-foreground">{g.category}</div>
-                <h4 className="font-bold">{o.title ?? g.title}</h4>
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          All game content is stored in the database. Edits go live immediately on the public site.
+        </p>
+        <Button size="sm" onClick={startNew}>
+          <Plus className="!size-3.5" /> Add game
+        </Button>
+      </div>
+
+      {isLoading && (
+        <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+          Loading games…
+        </p>
+      )}
+
+      {!isLoading && games.length === 0 && (
+        <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+          No games yet. Click "Add game" to create the first one.
+        </p>
+      )}
+
+      <div className="grid gap-3">
+        {games.map((g) => (
+          <Card key={g.slug} className="flex flex-wrap items-center gap-4 p-4">
+            <div className="h-16 w-16 overflow-hidden rounded-lg bg-muted">
+              {g.cover_url && (
+                <img src={g.cover_url} alt="" className="h-full w-full object-cover" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">
+                {g.category} · {g.volatility} · RTP {g.rtp}%
               </div>
-              <Button variant="ghost" size="sm" onClick={() => resetGame(g.slug)}>
-                <RotateCcw className="!size-3.5" /> Reset
+              <h4 className="font-bold">{g.title}</h4>
+              <p className="truncate text-xs text-muted-foreground">/{g.slug}</p>
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => startEdit(g)}>
+                Edit
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={async () => {
+                  if (!confirm(`Delete "${g.title}"? This cannot be undone.`)) return;
+                  try {
+                    await del.mutateAsync(g.slug);
+                  } catch (err) {
+                    alert("Delete failed: " + (err instanceof Error ? err.message : String(err)));
+                  }
+                }}
+              >
+                <Trash2 className="!size-3.5 text-destructive" />
               </Button>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <Label>Title</Label>
-                <Input value={o.title ?? g.title} onChange={(e) => updateGame(g.slug, { title: e.target.value })} />
-              </div>
-              <div>
-                <Label>RTP %</Label>
-                <Input
-                  type="number"
-                  step={0.1}
-                  value={o.rtp ?? g.rtp}
-                  onChange={(e) => updateGame(g.slug, { rtp: parseFloat(e.target.value) })}
-                />
-              </div>
-            </div>
-            <div>
-              <Label>Tagline</Label>
-              <Input value={o.tagline ?? g.tagline} onChange={(e) => updateGame(g.slug, { tagline: e.target.value })} />
-            </div>
-            <div>
-              <Label>Description</Label>
-              <Textarea
-                rows={3}
-                value={o.description ?? g.description}
-                onChange={(e) => updateGame(g.slug, { description: e.target.value })}
-              />
-            </div>
-            <ImageField
-              label="Cover image"
-              value={o.cover ?? g.cover}
-              onChange={(v) => updateGame(g.slug, { cover: v ?? undefined })}
-              accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
-              placeholder="https://… (PNG, JPG, GIF, WebP, SVG)"
-              uploadLabel="Upload (PNG/JPG/GIF/SVG)"
-            />
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <Label>Trailer URL (YouTube, Vimeo ou .mp4)</Label>
-                <Input
-                  value={o.trailerUrl ?? ""}
-                  onChange={(e) => updateGame(g.slug, { trailerUrl: e.target.value || null })}
-                  placeholder="https://www.youtube.com/watch?v=…"
-                />
-              </div>
-              <div>
-                <Label>Play-demo URL (iframe)</Label>
-                <Input
-                  value={o.demoUrl ?? ""}
-                  onChange={(e) => updateGame(g.slug, { demoUrl: e.target.value || null })}
-                  placeholder="https://demo.exemplo.com/jogo"
-                />
-              </div>
-            </div>
-
-            <ScreenshotsEditor
-              value={o.screenshots ?? []}
-              onChange={(next) => updateGame(g.slug, { screenshots: next })}
-            />
-
-            <GameAssetUploader
-              slug={g.slug}
-              assets={o.assets ?? []}
-              onChange={(next) => updateGame(g.slug, { assets: next })}
-            />
           </Card>
-        );
-      })}
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function GameForm({
+  value,
+  onChange,
+  onCancel,
+  onSave,
+  saving,
+}: {
+  value: GameInput;
+  onChange: (v: GameInput) => void;
+  onCancel: () => void;
+  onSave: () => void;
+  saving: boolean;
+}) {
+  const set = <K extends keyof GameInput>(k: K, v: GameInput[K]) =>
+    onChange({ ...value, [k]: v });
+
+  return (
+    <Card className="space-y-4 p-5">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-black">{value.id ? "Edit game" : "New game"}</h3>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="sm" onClick={onCancel} disabled={saving}>
+            Cancel
+          </Button>
+          <Button size="sm" onClick={onSave} disabled={saving || !value.slug || !value.title}>
+            {saving ? "Saving…" : "Save"}
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <Label>Slug (URL, lowercase, no spaces)</Label>
+          <Input
+            value={value.slug}
+            onChange={(e) => set("slug", e.target.value.toLowerCase().replace(/\s+/g, "-"))}
+            placeholder="big-catch"
+          />
+        </div>
+        <div>
+          <Label>Title</Label>
+          <Input value={value.title} onChange={(e) => set("title", e.target.value)} />
+        </div>
+      </div>
+
+      <div>
+        <Label>Tagline</Label>
+        <Input value={value.tagline} onChange={(e) => set("tagline", e.target.value)} />
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-4">
+        <div>
+          <Label>Category</Label>
+          <Select value={value.category} onValueChange={(v) => set("category", v)}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {GAME_CATEGORIES.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Volatility</Label>
+          <Select value={value.volatility} onValueChange={(v) => set("volatility", v)}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {GAME_VOLATILITIES.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>RTP %</Label>
+          <Input
+            type="number" step={0.1}
+            value={value.rtp}
+            onChange={(e) => set("rtp", parseFloat(e.target.value) || 0)}
+          />
+        </div>
+        <div>
+          <Label>Paylines</Label>
+          <Input
+            type="number"
+            value={value.paylines}
+            onChange={(e) => set("paylines", parseInt(e.target.value, 10) || 0)}
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <Label>Reels (e.g. 5x3)</Label>
+          <Input value={value.reels} onChange={(e) => set("reels", e.target.value)} />
+        </div>
+        <div>
+          <Label>Display order (lower = first)</Label>
+          <Input
+            type="number"
+            value={value.position}
+            onChange={(e) => set("position", parseInt(e.target.value, 10) || 0)}
+          />
+        </div>
+      </div>
+
+      <div>
+        <Label>Description</Label>
+        <Textarea rows={4} value={value.description} onChange={(e) => set("description", e.target.value)} />
+      </div>
+
+      <ImageField
+        label="Cover image"
+        value={value.cover_url || null}
+        onChange={(v) => set("cover_url", v ?? "")}
+        accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+        placeholder="https://… (PNG, JPG, GIF, WebP, SVG)"
+        uploadLabel="Upload cover image"
+      />
+
+      <div>
+        <Label>Features</Label>
+        <StringListEditor
+          value={value.features}
+          onChange={(v) => set("features", v)}
+          placeholder="e.g. Free Spins"
+          addLabel="Add feature"
+        />
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <Label>Trailer URL (YouTube, Vimeo or .mp4)</Label>
+          <Input
+            value={value.trailer_url ?? ""}
+            onChange={(e) => set("trailer_url", e.target.value || null)}
+            placeholder="https://www.youtube.com/watch?v=…"
+          />
+        </div>
+        <div>
+          <Label>Play-demo URL (iframe)</Label>
+          <Input
+            value={value.demo_url ?? ""}
+            onChange={(e) => set("demo_url", e.target.value || null)}
+            placeholder="https://demo.example.com/game"
+          />
+        </div>
+      </div>
+
+      <ScreenshotsEditor
+        value={value.screenshots}
+        onChange={(next) => set("screenshots", next)}
+      />
+
+      {value.slug && (
+        <GameAssetUploader
+          slug={value.slug}
+          assets={value.assets}
+          onChange={(next) => set("assets", next)}
+        />
+      )}
+
+      <div className="flex justify-end gap-2 pt-2">
+        <Button variant="ghost" size="sm" onClick={onCancel} disabled={saving}>
+          Cancel
+        </Button>
+        <Button size="sm" onClick={onSave} disabled={saving || !value.slug || !value.title}>
+          {saving ? "Saving…" : "Save"}
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+function StringListEditor({
+  value,
+  onChange,
+  placeholder,
+  addLabel,
+}: {
+  value: string[];
+  onChange: (next: string[]) => void;
+  placeholder?: string;
+  addLabel: string;
+}) {
+  return (
+    <div className="space-y-2">
+      {value.map((item, i) => (
+        <div key={i} className="flex gap-2">
+          <Input
+            value={item}
+            placeholder={placeholder}
+            onChange={(e) => {
+              const next = [...value];
+              next[i] = e.target.value;
+              onChange(next);
+            }}
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onChange(value.filter((_, idx) => idx !== i))}
+            aria-label="Remove"
+          >
+            <Trash2 className="!size-4 text-destructive" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        onClick={() => onChange([...value, ""])}
+      >
+        <Plus className="!size-3.5" /> {addLabel}
+      </Button>
     </div>
   );
 }
@@ -910,7 +1121,7 @@ function ScreenshotsEditor({
       </div>
       {value.length === 0 && (
         <p className="rounded-lg border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
-          Nenhuma screenshot. Adicione URLs ou faça upload via campo de imagem.
+          No screenshots yet. Add a URL or upload one below.
         </p>
       )}
       <div className="space-y-2">
@@ -935,7 +1146,7 @@ function ScreenshotsEditor({
                 variant="ghost"
                 onClick={() => onChange(value.filter((_, idx) => idx !== i))}
               >
-                <Trash2 className="!size-3.5 text-destructive" /> Remover
+                <Trash2 className="!size-3.5 text-destructive" /> Remove
               </Button>
             </div>
           </div>
@@ -1003,21 +1214,21 @@ function AboutEditor({
       <Card className="space-y-4 p-5">
         <div className="grid gap-3 sm:grid-cols-3">
           <div>
-            <Label>Título (prefixo)</Label>
+            <Label>Title (prefix)</Label>
             <Input
               value={value.titlePrefix}
               onChange={(e) => onChange({ ...value, titlePrefix: e.target.value })}
             />
           </div>
           <div>
-            <Label>Título (gradiente)</Label>
+            <Label>Title (accent / gradient)</Label>
             <Input
               value={value.titleAccent}
               onChange={(e) => onChange({ ...value, titleAccent: e.target.value })}
             />
           </div>
           <div>
-            <Label>Título (sufixo)</Label>
+            <Label>Title (suffix)</Label>
             <Input
               value={value.titleSuffix}
               onChange={(e) => onChange({ ...value, titleSuffix: e.target.value })}
@@ -1025,7 +1236,7 @@ function AboutEditor({
           </div>
         </div>
         <div>
-          <Label>Texto de abertura</Label>
+          <Label>Lead paragraph</Label>
           <Textarea
             rows={3}
             value={value.lead}
@@ -1052,14 +1263,14 @@ function AboutEditor({
               <Input value={s.value} onChange={(e) => updateStat(i, { value: e.target.value })} />
             </div>
             <div>
-              <Label className="text-xs">Rótulo</Label>
+              <Label className="text-xs">Label</Label>
               <Input value={s.label} onChange={(e) => updateStat(i, { label: e.target.value })} />
             </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => onChange({ ...value, stats: value.stats.filter((_, idx) => idx !== i) })}
-              aria-label="Remover stat"
+              aria-label="Remove stat"
             >
               <Trash2 className="!size-4 text-destructive" />
             </Button>
@@ -1069,13 +1280,13 @@ function AboutEditor({
 
       <Card className="space-y-3 p-5">
         <div className="flex items-center justify-between">
-          <h3 className="font-bold">Parágrafos ({value.paragraphs.length})</h3>
+          <h3 className="font-bold">Paragraphs ({value.paragraphs.length})</h3>
           <Button
             size="sm"
             variant="outline"
             onClick={() => onChange({ ...value, paragraphs: [...value.paragraphs, ""] })}
           >
-            <Plus className="!size-3.5" /> Add parágrafo
+            <Plus className="!size-3.5" /> Add paragraph
           </Button>
         </div>
         {value.paragraphs.map((p, i) => (
@@ -1087,7 +1298,7 @@ function AboutEditor({
                 size="sm"
                 onClick={() => onChange({ ...value, paragraphs: value.paragraphs.filter((_, idx) => idx !== i) })}
               >
-                <Trash2 className="!size-3.5 text-destructive" /> Remover
+                <Trash2 className="!size-3.5 text-destructive" /> Remove
               </Button>
             </div>
           </div>
@@ -1115,7 +1326,7 @@ function SocialEditor({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="font-bold">Redes sociais ({value.length})</h3>
+        <h3 className="font-bold">Social links ({value.length})</h3>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => onChange(DEFAULT_SOCIAL)}>
             <RotateCcw className="!size-3.5" /> Reset
@@ -1130,14 +1341,14 @@ function SocialEditor({
       </div>
       {value.length === 0 && (
         <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          Nenhum link. Clique em "Add link" para começar.
+          No links yet. Click "Add link" to start.
         </p>
       )}
       {value.map((s, i) => (
         <Card key={i} className="p-4">
           <div className="grid gap-3 sm:grid-cols-[180px,1fr,auto] sm:items-end">
             <div>
-              <Label className="text-xs">Plataforma</Label>
+              <Label className="text-xs">Platform</Label>
               <Select
                 value={s.platform}
                 onValueChange={(v) => update(i, { platform: v as SocialPlatform })}
@@ -1166,7 +1377,7 @@ function SocialEditor({
               variant="ghost"
               size="icon"
               onClick={() => onChange(value.filter((_, idx) => idx !== i))}
-              aria-label="Remover"
+              aria-label="Remove"
             >
               <Trash2 className="!size-4 text-destructive" />
             </Button>

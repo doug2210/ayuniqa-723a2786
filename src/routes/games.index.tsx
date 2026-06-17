@@ -3,9 +3,7 @@ import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Input } from "@/components/ui/input";
-import { categories } from "@/lib/games-data";
-import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
-import { mergedGames } from "@/lib/site-config";
+import { useGames, GAME_CATEGORIES } from "@/lib/games-api";
 import { cn } from "@/lib/utils";
 import { ScrollReveal } from "@/components/site/ScrollReveal";
 import { TiltCard } from "@/components/site/TiltCard";
@@ -25,8 +23,7 @@ export const Route = createFileRoute("/games/")({
 function GamesPage() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("All");
-  const { config } = useSiteConfig();
-  const games = mergedGames(config.games);
+  const { data: games = [], isLoading } = useGames();
 
   const filtered = useMemo(
     () =>
@@ -57,7 +54,7 @@ function GamesPage() {
               <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search games…" className="pl-9 h-11" />
             </div>
             <div className="flex flex-wrap gap-2">
-              {["All", ...categories].map((c) => (
+              {["All", ...GAME_CATEGORIES].map((c) => (
                 <button
                   key={c}
                   onClick={() => setCat(c)}
@@ -77,7 +74,9 @@ function GamesPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <p className="py-20 text-center text-muted-foreground">Loading games…</p>
+        ) : filtered.length === 0 ? (
           <p className="py-20 text-center text-muted-foreground">No games match your search.</p>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -90,7 +89,7 @@ function GamesPage() {
                   className="group block overflow-hidden rounded-2xl border border-border bg-card shadow-card transition-smooth hover:-translate-y-1 hover:shadow-glow"
                 >
                   <div className="relative aspect-square overflow-hidden bg-gradient-warm">
-                    <img src={g.cover} alt={g.title} loading="lazy" width={1024} height={1024} className="h-full w-full object-cover transition-smooth group-hover:scale-105" />
+                    <img src={g.cover_url} alt={g.title} loading="lazy" width={1024} height={1024} className="h-full w-full object-cover transition-smooth group-hover:scale-105" />
                     <span className="absolute right-3 top-3 animate-bounce-soft rounded-full bg-[color:var(--brand-yellow)] px-2 py-0.5 text-[10px] font-bold text-[color:var(--brand-grey)]">
                       {g.category}
                     </span>
