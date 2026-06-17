@@ -107,6 +107,8 @@ export function FloatingSlotItems({
     ? "linear-gradient(to right, black 0%, black 22%, transparent 38%, transparent 62%, black 78%, black 100%)"
     : "linear-gradient(to right, black 0%, black 14%, transparent 25%, transparent 75%, black 86%, black 100%)";
 
+  if (!shouldRender) return null;
+
   return (
     <div
       ref={containerRef}
