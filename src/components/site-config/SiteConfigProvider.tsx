@@ -10,12 +10,14 @@ type Ctx = {
   config: SiteConfig;
   setConfig: (next: SiteConfig | ((prev: SiteConfig) => SiteConfig)) => void;
   reset: () => void;
+  loaded: boolean;
 };
 
 const SiteConfigContext = createContext<Ctx | null>(null);
 
 export function SiteConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfigState] = useState<SiteConfig>(DEFAULT_SITE_CONFIG);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     // Supabase is the single source of truth. No localStorage hydration —
@@ -31,13 +33,19 @@ export function SiteConfigProvider({ children }: { children: ReactNode }) {
       .eq("id", SITE_CONFIG_ROW_ID)
       .maybeSingle()
       .then(({ data, error }) => {
-        if (error || !data?.data) return;
-        const isEmpty =
-          typeof data.data === "object" &&
-          data.data !== null &&
-          Object.keys(data.data as object).length === 0;
-        if (isEmpty) return;
-        setConfigState(mergeConfig(data.data));
+        try {
+          if (error || !data?.data) return;
+          const isEmpty =
+            typeof data.data === "object" &&
+            data.data !== null &&
+            Object.keys(data.data as object).length === 0;
+          if (isEmpty) return;
+          setConfigState(mergeConfig(data.data));
+        } finally {
+          // Mark as loaded whether the fetch returned data, was empty, or errored —
+          // downstream components can then decide to fall back to defaults.
+          setLoaded(true);
+        }
       });
   }, []);
 
@@ -63,7 +71,7 @@ export function SiteConfigProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <SiteConfigContext.Provider value={{ config, setConfig, reset }}>
+    <SiteConfigContext.Provider value={{ config, setConfig, reset, loaded }}>
       {children}
     </SiteConfigContext.Provider>
   );
@@ -77,6 +85,7 @@ export function useSiteConfig(): Ctx {
       config: DEFAULT_SITE_CONFIG,
       setConfig: () => {},
       reset: () => {},
+      loaded: false,
     };
   }
   return ctx;

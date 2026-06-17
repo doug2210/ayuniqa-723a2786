@@ -103,7 +103,7 @@ export function AdminPanel() {
         <div>
           <h1 className="text-3xl font-black tracking-tight">Site admin</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Changes save instantly to your browser. No backend yet — use export/import to share.
+            Changes are saved instantly to Lovable Cloud and go live for all visitors.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
