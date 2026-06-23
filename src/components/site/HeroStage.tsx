@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
 import type { HeroStageSymbol, StageTint, StageIconName } from "@/lib/site-config";
+import { AstronautMascot } from "@/components/site/AstronautMascot";
 
 const ICON_MAP: Record<StageIconName, typeof Crown> = {
   Crown, Diamond, Star, Cherry, Gem, Coins, Sparkles, Zap,
@@ -137,77 +138,18 @@ export function HeroStage() {
         ))}
       </div>
 
-      {/* Center reel stage */}
+      {/* Center astronaut mascot (default stage) */}
       {stage.mode === "reels" && (
-      <div
-        className="absolute left-1/2 top-1/2 w-[58%]"
-        style={{
-          transform: `translate(-50%, -50%) rotateX(${parallax.y * -8}deg) rotateY(${parallax.x * 10}deg)`,
-          transition: "transform 0.25s ease-out",
-          transformStyle: "preserve-3d",
-        }}
-      >
-        <div className="relative rounded-3xl border border-border bg-card/95 p-4 shadow-glow backdrop-blur">
-          {/* Top brand bar */}
-          <div className="mb-3 flex items-center justify-between rounded-xl bg-gradient-brand px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-white">
-            <span>Ayuniqa</span>
-            <span className="rounded bg-white/20 px-1.5 py-0.5">Live</span>
-          </div>
-
-          {/* Reels */}
-          <div className="grid grid-cols-3 gap-2 rounded-2xl bg-gradient-to-b from-[color:var(--brand-grey)]/5 to-[color:var(--brand-orange)]/5 p-2">
-            {reels.map((strip, i) => (
-              <div
-                key={i}
-                className="relative h-32 overflow-hidden rounded-xl bg-card shadow-card sm:h-36"
-              >
-                {/* Top/Bottom fade */}
-                <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-6 bg-gradient-to-b from-card to-transparent" />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-6 bg-gradient-to-t from-card to-transparent" />
-                {/* Highlight line */}
-                <div
-                  className="pointer-events-none absolute inset-x-1 top-1/2 z-20 h-10 -translate-y-1/2 rounded-md border-2"
-                  style={{ borderColor: "color-mix(in oklab, var(--brand-orange) 70%, transparent)" }}
-                />
-                <div
-                  className="flex flex-col items-center justify-start gap-2 py-2 will-change-transform animate-reel"
-                  style={{
-                    animationDuration: `${4 + i * 1.4}s`,
-                    animationDelay: `${i * 0.2}s`,
-                  }}
-                >
-                  {[...strip, ...strip].map((s, j) => (
-                    <span
-                      key={j}
-                      className="grid h-10 w-10 place-items-center text-2xl font-black"
-                      style={{
-                        color:
-                          j % 3 === 0
-                            ? "var(--brand-orange)"
-                            : j % 3 === 1
-                            ? "var(--brand-light-orange)"
-                            : "var(--brand-grey)",
-                      }}
-                    >
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Bottom meta */}
-          <div className="mt-3 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            <span>RTP 96.4%</span>
-            <span className="flex items-center gap-1">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[color:var(--brand-orange)]" />
-              MAX WIN 10,000x
-            </span>
-          </div>
+        <div
+          className="absolute left-1/2 top-1/2 w-[62%] -translate-x-1/2 -translate-y-1/2"
+          style={{
+            transform: `translate(-50%, -50%) translate(${parallax.x * 18}px, ${parallax.y * 18}px) rotateX(${parallax.y * -6}deg) rotateY(${parallax.x * 8}deg)`,
+            transition: "transform 0.25s ease-out",
+            transformStyle: "preserve-3d",
+          }}
+        >
+          <AstronautMascot className="h-auto w-full" />
         </div>
-
-      </div>
       )}
 
       {/* Center character image */}
