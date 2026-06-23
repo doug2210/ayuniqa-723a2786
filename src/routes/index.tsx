@@ -41,11 +41,11 @@ function Hero() {
   const { config } = useSiteConfig();
   const h = config.hero;
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative isolate overflow-hidden">
       <Meteors number={18} />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,color-mix(in_oklab,var(--brand-light-orange)_25%,transparent),transparent_60%),radial-gradient(ellipse_at_bottom_left,color-mix(in_oklab,var(--brand-yellow)_18%,transparent),transparent_55%)]" />
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-28">
-        <div className="animate-fade-up">
+        <div className="relative z-20 animate-fade-up">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-foreground/80 shadow-card">
             <Sparkles className="animate-wiggle text-[color:var(--brand-orange)]" /> {h.badge}
           </span>
@@ -61,13 +61,13 @@ function Hero() {
               <a href={h.secondaryCta.href}>{h.secondaryCta.label}</a>
             </Button>
           </div>
-          <div className="relative z-10 mt-10 grid max-w-2xl grid-cols-3 gap-3 sm:gap-7">
+          <div className="relative z-30 mt-10 grid max-w-2xl grid-cols-3 gap-3 sm:gap-7">
             {h.stats.filter((s) => s.enabled).map((s, i) => (
               <Stat key={i} value={s.value} suffix={s.suffix} decimals={s.decimals} label={s.label} />
             ))}
           </div>
         </div>
-        <div className="relative">
+        <div className="relative z-0">
           <HeroStage />
           {h.award.enabled && (
             <span className="absolute -bottom-2 left-1/2 z-30 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[color:var(--brand-yellow)] px-3 py-1.5 text-xs font-bold text-[color:var(--brand-grey)] shadow-card">
@@ -82,7 +82,7 @@ function Hero() {
 
 function Stat({ value, suffix = "", decimals = 0, label }: { value: number; suffix?: string; decimals?: number; label: string }) {
   return (
-    <div className="relative z-10">
+    <div className="relative z-30">
       <div className="text-4xl font-black leading-none text-gradient-brand sm:text-5xl lg:text-6xl">
         <NumberTicker value={value} suffix={suffix} decimalPlaces={decimals} />
       </div>
