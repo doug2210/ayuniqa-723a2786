@@ -1,12 +1,33 @@
 import { useEffect, useRef } from "react";
 import videoAsset from "@/assets/hero-scroll-v2.mp4.asset.json";
 
-export function HeroScrollVideo({ src }: { src?: string | null } = {}) {
+export function HeroScrollVideo({
+  src,
+  mode = "scroll",
+}: { src?: string | null; mode?: "scroll" | "loop" } = {}) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+
+    if (mode === "loop") {
+      // Autoplay loop — no scroll scrubbing.
+      video.loop = true;
+      const tryPlay = () => {
+        const p = video.play();
+        if (p && typeof p.catch === "function") p.catch(() => {});
+      };
+      if (video.readyState >= 2) tryPlay();
+      else video.addEventListener("loadeddata", tryPlay, { once: true });
+      return () => {
+        video.removeEventListener("loadeddata", tryPlay);
+        video.pause();
+      };
+    }
+
+    video.loop = false;
+    video.pause();
 
     let rafId = 0;
     let ready = false;
@@ -54,7 +75,7 @@ export function HeroScrollVideo({ src }: { src?: string | null } = {}) {
       video.removeEventListener("loadedmetadata", onLoaded);
       if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [src]);
+  }, [src, mode]);
 
   return (
     <video
