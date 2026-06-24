@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import videoAsset from "@/assets/hero-scroll-v2.mp4.asset.json";
 
-export function HeroScrollVideo() {
+export function HeroScrollVideo({ src }: { src?: string | null } = {}) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -54,12 +54,12 @@ export function HeroScrollVideo() {
       video.removeEventListener("loadedmetadata", onLoaded);
       if (rafId) cancelAnimationFrame(rafId);
     };
-  }, []);
+  }, [src]);
 
   return (
     <video
       ref={videoRef}
-      src={videoAsset.url}
+      src={src || videoAsset.url}
       muted
       playsInline
       preload="auto"
