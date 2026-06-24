@@ -22,6 +22,7 @@ export function ImageField({
   placeholder = "https://… or upload below",
   accept = "image/*",
   uploadLabel = "Upload image",
+  previewKind = "image",
 }: {
   label: string;
   value: string | null | undefined;
@@ -29,6 +30,7 @@ export function ImageField({
   placeholder?: string;
   accept?: string;
   uploadLabel?: string;
+  previewKind?: "image" | "video";
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -90,7 +92,17 @@ export function ImageField({
       {error && <p className="text-xs text-destructive">{error}</p>}
       {value && (
         <div className="mt-2 overflow-hidden rounded-lg border border-border bg-muted/30 p-2">
-          <img src={value} alt="" className="mx-auto h-32 w-auto object-contain" />
+          {previewKind === "video" ? (
+            <video
+              src={value}
+              muted
+              playsInline
+              controls
+              className="mx-auto h-40 w-auto"
+            />
+          ) : (
+            <img src={value} alt="" className="mx-auto h-32 w-auto object-contain" />
+          )}
         </div>
       )}
     </div>
