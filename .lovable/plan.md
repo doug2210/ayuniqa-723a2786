@@ -1,26 +1,29 @@
-## Plan
+## Issues
 
-### 1. Upload the video as a CDN asset
-- Run `lovable-assets create --file /mnt/user-uploads/magnific_create-a-video_YV47KM0WeC.mp4 --filename hero-scroll.mp4 > src/assets/hero-scroll.mp4.asset.json`.
+**1. Flash of old hero video on reload.**
+`SiteConfigProvider` mounts with `DEFAULT_SITE_CONFIG` (where `scrollVideoUrl = null`), so `HeroScrollVideo` immediately renders the bundled fallback (`hero-scroll-v2.mp4`). A moment later Supabase responds with the admin-saved `scrollVideoUrl` and the `<video src>` swaps — that swap is the "flash" the user sees.
 
-### 2. Hero background + top effects (`src/routes/index.tsx`)
-- On the `<section>`, replace the radial-gradient overlay div and remove `<Meteors number={18} />` so the hero has a solid `#FEF5F3` background (inline `style={{ backgroundColor: "#FEF5F3" }}` on the section, keeping `relative isolate overflow-hidden`).
-- Keep the text column, stats, CTAs, and award badge untouched.
+**2. Loop has a small pause before restarting.**
+The native `<video loop>` attribute is currently set imperatively in `useEffect` after mount (`video.loop = true`), so the first cycle can end before `loop` is applied. Even when applied, the browser's loop-seek introduces a noticeable hiccup, made worse if the source mp4 carries an audio track or non-faststart `moov` atom.
 
-### 3. Replace the right-side element with a scroll-scrubbed video
-- Replace the `<HeroStage />` (and the surrounding award-badge overlay) inside the right column with a new component `<HeroScrollVideo />`. No glow rings, no particles, no badges, no astronaut — just the video element, centered, responsive (`w-full max-w-[560px] aspect-square` or natural ratio), with rounded corners optional but nothing layered in front/behind.
+## Fix
 
-### 4. New component `src/components/site/HeroScrollVideo.tsx`
-- Render a muted, `playsInline`, `preload="auto"` `<video>` pointing at the uploaded asset URL. No `autoplay`, no `controls`.
-- Use a ref + `requestAnimationFrame`-throttled `scroll` listener on `window`.
-- On each frame:
-  - Get the hero `<section>` bounding rect (passed via a ref or via `video.closest('section')`).
-  - Compute scroll progress `p = clamp((-rect.top) / rect.height, 0, 1)` — `0` when the hero just enters the viewport top, `1` when its bottom hits the viewport top (user is leaving the hero).
-  - Set `video.currentTime = p * video.duration` (≈ 4s, so frame 4s plays exactly as the hero scrolls out).
-- Wait for `loadedmetadata` before scrubbing. iOS Safari note: keep `muted` + `playsInline` so seeking works without a gesture.
-- Cleanup listener on unmount.
+### `src/components/site/HeroScrollVideo.tsx`
+- Accept a `ready` prop (or use the existing site config `loaded` flag in the parent). When the parent passes `ready=false`, render nothing (or a transparent placeholder of the same aspect) so the bundled fallback never paints before Supabase resolves.
+- Set `loop` and `autoPlay` declaratively in JSX when `mode === "loop"` (instead of toggling in `useEffect`) so the attribute exists from the first frame.
+- For smoother looping, add a `timeupdate` handler in loop mode that, when `duration - currentTime < 0.15s`, resets `currentTime = 0` immediately and calls `play()` — this short-circuits the browser's end-of-stream seek and eliminates the visible pause. Keep the native `loop` attribute as a safety net.
+- Keep scroll mode behavior unchanged.
 
-### 5. Technical notes
-- No changes to `HeroStage.tsx`, `AstronautMascot`, or astronaut asset — they simply stop being used by the hero. (Leave them in repo for now; user didn't ask to delete.)
-- Keep stats z-index as-is; with no overlay layers there's nothing to fight over.
-- Build/typecheck after changes.
+### `src/routes/index.tsx`
+- Pull `loaded` from `useSiteConfig()` and pass it to `<HeroScrollVideo ready={loaded} ... />`. The hero column already has a fixed aspect (max-width 560px, intrinsic video aspect) — reserve the box via a wrapping `div` with `aspect-video` (or matching aspect) so layout doesn't jump while we wait one tick for Supabase.
+
+### Re-encode the bundled fallback video (optional but recommended)
+- The current `hero-scroll-v2.mp4` likely has an audio track and/or trailing silence that contributes to the loop gap. Re-encode with `ffmpeg -i in.mp4 -an -movflags +faststart -pix_fmt yuv420p -c:v libx264 -crf 20 out.mp4` and re-upload as a new asset, replacing `src/assets/hero-scroll-v2.mp4.asset.json`. This makes both the bundled fallback and any user who keeps the default loop seamlessly.
+
+### Out of scope
+- No changes to admin panel UI, background gradient, stats, or other hero content.
+- No changes to site-config persistence model (Supabase remains source of truth).
+
+## Result
+- On refresh the hero video area stays empty for a beat (no layout shift), then paints the correct admin-selected video once — no swap, no flash.
+- In loop mode the video restarts without the visible pause.

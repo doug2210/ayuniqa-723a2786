@@ -37,7 +37,7 @@ function Index() {
 }
 
 function Hero() {
-  const { config } = useSiteConfig();
+  const { config, loaded } = useSiteConfig();
   const h = config.hero;
   return (
     <section className="relative isolate overflow-hidden" style={{ backgroundColor: h.backgroundColor }}>
@@ -66,7 +66,7 @@ function Hero() {
           </div>
         </div>
         <div className="relative z-0">
-          <HeroScrollVideo src={h.scrollVideoUrl} mode={h.scrollVideoMode} />
+          <HeroScrollVideo src={h.scrollVideoUrl} mode={h.scrollVideoMode} ready={loaded} />
         </div>
       </div>
     </section>
