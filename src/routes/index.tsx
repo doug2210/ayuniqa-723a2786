@@ -1,10 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Sparkles, Gamepad2, Globe, ShieldCheck, Zap, Trophy } from "lucide-react";
+import { ArrowRight, Sparkles, Gamepad2, Globe, ShieldCheck, Zap } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
-import { HeroStage } from "@/components/site/HeroStage";
+import { HeroScrollVideo } from "@/components/site/HeroScrollVideo";
 import { ScrollReveal } from "@/components/site/ScrollReveal";
-import { Meteors } from "@/components/magicui/meteors";
 import { AuroraText } from "@/components/magicui/aurora-text";
 import { NumberTicker } from "@/components/magicui/number-ticker";
 import { BorderBeam } from "@/components/magicui/border-beam";
@@ -41,9 +40,7 @@ function Hero() {
   const { config } = useSiteConfig();
   const h = config.hero;
   return (
-    <section className="relative isolate overflow-hidden">
-      <Meteors number={18} />
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,color-mix(in_oklab,var(--brand-light-orange)_25%,transparent),transparent_60%),radial-gradient(ellipse_at_bottom_left,color-mix(in_oklab,var(--brand-yellow)_18%,transparent),transparent_55%)]" />
+    <section className="relative isolate overflow-hidden" style={{ backgroundColor: "#FEF5F3" }}>
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-28">
         <div className="relative z-20 animate-fade-up">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-foreground/80 shadow-card">
@@ -68,12 +65,7 @@ function Hero() {
           </div>
         </div>
         <div className="relative z-0">
-          <HeroStage />
-          {h.award.enabled && (
-            <span className="absolute -bottom-2 left-1/2 z-30 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[color:var(--brand-yellow)] px-3 py-1.5 text-xs font-bold text-[color:var(--brand-grey)] shadow-card">
-              <Trophy className="!size-3.5" /> {h.award.label}
-            </span>
-          )}
+          <HeroScrollVideo />
         </div>
       </div>
     </section>

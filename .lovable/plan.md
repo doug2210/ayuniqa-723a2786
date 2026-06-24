@@ -1,31 +1,26 @@
-## O que mudar
+## Plan
 
-### 1. Restaurar a logo no Header
-`src/components/site/Header.tsx`:
-- Remover `import { AstronautMascot }`.
-- Voltar a importar a logo (`import logoAsset from "@/assets/ayuniqa-logo.png"` — usando o asset json existente).
-- Substituir `<AstronautMascot ... />` por `<img src={logoAsset} alt="Ayuniqa" className="h-9 w-auto transition-transform duration-300 group-hover:scale-110" />`.
+### 1. Upload the video as a CDN asset
+- Run `lovable-assets create --file /mnt/user-uploads/magnific_create-a-video_YV47KM0WeC.mp4 --filename hero-scroll.mp4 > src/assets/hero-scroll.mp4.asset.json`.
 
-### 2. Colocar o astronauta no HeroStage (lado direito do hero)
-`src/components/site/HeroStage.tsx`:
-- Importar `AstronautMascot`.
-- Renderizar o astronauta como elemento central da stage, **substituindo visualmente o bloco de "reels"** quando o modo for `reels` (mantendo os anéis de glow, partículas, halo pontilhado e badges flutuantes ao redor — só o quadro de reels sai).
-- O astronauta fica posicionado em `absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2`, com largura `~62%` da stage, recebendo o mesmo efeito de parallax já calculado (`parallax.x/y`) para inclinação sutil, além da rotação do capacete seguindo o mouse (já implementada no componente).
-- Modo `character` continua funcionando como override caso o admin defina uma imagem própria.
+### 2. Hero background + top effects (`src/routes/index.tsx`)
+- On the `<section>`, replace the radial-gradient overlay div and remove `<Meteors number={18} />` so the hero has a solid `#FEF5F3` background (inline `style={{ backgroundColor: "#FEF5F3" }}` on the section, keeping `relative isolate overflow-hidden`).
+- Keep the text column, stats, CTAs, and award badge untouched.
 
-### 3. Corrigir z-index do bloco de stats (UPTIME / MARKETS / …)
-Problema: no breakpoint mobile/tablet o HeroStage fica empilhado e o glow/partículas passam por cima dos números.
+### 3. Replace the right-side element with a scroll-scrubbed video
+- Replace the `<HeroStage />` (and the surrounding award-badge overlay) inside the right column with a new component `<HeroScrollVideo />`. No glow rings, no particles, no badges, no astronaut — just the video element, centered, responsive (`w-full max-w-[560px] aspect-square` or natural ratio), with rounded corners optional but nothing layered in front/behind.
 
-`src/routes/index.tsx`:
-- Na `<section>` do Hero, adicionar `isolate` para criar contexto de empilhamento.
-- No bloco da coluna de texto (`<div className="animate-fade-up">`) adicionar `relative z-20`.
-- No container do `<HeroStage />` (`<div className="relative">`) usar `relative z-0`.
-- Subir o grid dos stats de `z-10` para `z-30` e o componente `Stat` também para `z-30`, garantindo que números e labels fiquem sempre na frente do astronauta/glow.
+### 4. New component `src/components/site/HeroScrollVideo.tsx`
+- Render a muted, `playsInline`, `preload="auto"` `<video>` pointing at the uploaded asset URL. No `autoplay`, no `controls`.
+- Use a ref + `requestAnimationFrame`-throttled `scroll` listener on `window`.
+- On each frame:
+  - Get the hero `<section>` bounding rect (passed via a ref or via `video.closest('section')`).
+  - Compute scroll progress `p = clamp((-rect.top) / rect.height, 0, 1)` — `0` when the hero just enters the viewport top, `1` when its bottom hits the viewport top (user is leaving the hero).
+  - Set `video.currentTime = p * video.duration` (≈ 4s, so frame 4s plays exactly as the hero scrolls out).
+- Wait for `loadedmetadata` before scrubbing. iOS Safari note: keep `muted` + `playsInline` so seeking works without a gesture.
+- Cleanup listener on unmount.
 
-### 4. Sem mudanças em lógica/backend
-Apenas presentation. Nenhuma alteração em config providers, rotas ou APIs.
-
-## Arquivos afetados
-- `src/components/site/Header.tsx` (revert para logo)
-- `src/components/site/HeroStage.tsx` (injetar `AstronautMascot`)
-- `src/routes/index.tsx` (z-index dos stats e isolamento do hero)
+### 5. Technical notes
+- No changes to `HeroStage.tsx`, `AstronautMascot`, or astronaut asset — they simply stop being used by the hero. (Leave them in repo for now; user didn't ask to delete.)
+- Keep stats z-index as-is; with no overlay layers there's nothing to fight over.
+- Build/typecheck after changes.
