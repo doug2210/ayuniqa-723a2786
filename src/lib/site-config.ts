@@ -130,6 +130,10 @@ export type HeroConfig = {
   stats: StatItem[];
   award: AwardBadge;
   stage: HeroStageConfig;
+  /** Solid background color for the hero section. */
+  backgroundColor: string;
+  /** Optional video URL that replaces the default scroll-scrubbed hero video. */
+  scrollVideoUrl: string | null;
 };
 
 export type ContactConfig = {
@@ -191,6 +195,8 @@ export const DEFAULT_HERO: HeroConfig = {
   stats: DEFAULT_STATS,
   award: DEFAULT_AWARD,
   stage: DEFAULT_HERO_STAGE,
+  backgroundColor: "#F7F3E6",
+  scrollVideoUrl: null,
 };
 
 export const DEFAULT_CONTACT: ContactConfig = {
@@ -271,6 +277,14 @@ export function mergeConfig(stored: unknown): SiteConfig {
       award: { ...DEFAULT_AWARD, ...(heroIn.award ?? {}) },
       stage: mergedStage,
       heroImageUrl: null,
+      backgroundColor:
+        typeof heroIn.backgroundColor === "string" && heroIn.backgroundColor.trim()
+          ? heroIn.backgroundColor
+          : DEFAULT_HERO.backgroundColor,
+      scrollVideoUrl:
+        typeof heroIn.scrollVideoUrl === "string" && heroIn.scrollVideoUrl.trim()
+          ? heroIn.scrollVideoUrl
+          : null,
     },
     floating: {
       items: Array.isArray(s.floating?.items) && s.floating!.items.length > 0
