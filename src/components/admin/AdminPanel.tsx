@@ -535,12 +535,28 @@ function HeroAwardEditor({
 function HeroScrollEditor({
   backgroundColor,
   videoUrl,
+  videoMode,
+  fullHero,
   onChange,
 }: {
   backgroundColor: string;
   videoUrl: string | null;
-  onChange: (patch: { backgroundColor?: string; scrollVideoUrl?: string | null }) => void;
+  videoMode: "scroll" | "loop";
+  fullHero: typeof DEFAULT_HERO;
+  onChange: (patch: {
+    backgroundColor?: string;
+    scrollVideoUrl?: string | null;
+    scrollVideoMode?: "scroll" | "loop";
+  }) => void;
 }) {
+  const { setConfig } = useSiteConfig();
+  const [saved, setSaved] = useState(false);
+  const handleSave = () => {
+    // Re-assert the current hero config to force a Supabase upsert + cross-tab broadcast.
+    setConfig((c) => ({ ...c, hero: { ...fullHero } }));
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 2000);
+  };
   return (
     <div className="space-y-6">
       <Card className="space-y-4 p-5">
@@ -578,9 +594,44 @@ function HeroScrollEditor({
         <div>
           <h3 className="font-bold">Vídeo de scroll</h3>
           <p className="text-xs text-muted-foreground">
-            Substitui o vídeo padrão exibido ao lado do texto. O vídeo é controlado pelo scroll
-            (0s no topo, fim quando o usuário deixa o hero). Use um MP4 curto (≈ 4 segundos), sem áudio.
+            Substitui o vídeo padrão exibido ao lado do texto. Escolha entre controlar o vídeo
+            pelo scroll da página ou deixá-lo rodando em loop automático.
           </p>
+        </div>
+        <div>
+          <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+            Modo de reprodução
+          </Label>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => onChange({ scrollVideoMode: "scroll" })}
+              className={`rounded-lg border p-3 text-left text-sm transition ${
+                videoMode === "scroll"
+                  ? "border-primary bg-primary/10 ring-2 ring-primary"
+                  : "border-border hover:border-foreground/40"
+              }`}
+            >
+              <div className="font-bold">Scroll</div>
+              <div className="text-xs text-muted-foreground">
+                Avança quadro a quadro conforme o usuário rola a página.
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange({ scrollVideoMode: "loop" })}
+              className={`rounded-lg border p-3 text-left text-sm transition ${
+                videoMode === "loop"
+                  ? "border-primary bg-primary/10 ring-2 ring-primary"
+                  : "border-border hover:border-foreground/40"
+              }`}
+            >
+              <div className="font-bold">Loop</div>
+              <div className="text-xs text-muted-foreground">
+                Toca automaticamente em loop, sem interagir com o scroll.
+              </div>
+            </button>
+          </div>
         </div>
         <ImageField
           label="Arquivo de vídeo (MP4 / WebM)"
@@ -594,6 +645,22 @@ function HeroScrollEditor({
         <p className="text-xs text-muted-foreground">
           Deixe vazio para usar o vídeo padrão embutido.
         </p>
+        <div className="flex items-center gap-3 border-t border-border pt-4">
+          <Button onClick={handleSave} size="sm">
+            {saved ? (
+              <>
+                <Check className="!size-3.5" /> Salvo!
+              </>
+            ) : (
+              <>
+                <Save className="!size-3.5" /> Salvar alterações
+              </>
+            )}
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            As alterações também são salvas automaticamente ao editar.
+          </p>
+        </div>
       </Card>
     </div>
   );
