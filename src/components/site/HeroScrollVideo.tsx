@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import videoAsset from "@/assets/hero-scroll.mp4.asset.json";
+import videoAsset from "@/assets/hero-scroll-v2.mp4.asset.json";
 
 export function HeroScrollVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);

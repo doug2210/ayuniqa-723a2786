@@ -40,7 +40,7 @@ function Hero() {
   const { config } = useSiteConfig();
   const h = config.hero;
   return (
-    <section className="relative isolate overflow-hidden" style={{ backgroundColor: "#FEF5F3" }}>
+    <section className="relative isolate overflow-hidden" style={{ backgroundColor: "#F7F3E6" }}>
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-28">
         <div className="relative z-20 animate-fade-up">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-foreground/80 shadow-card">
@@ -75,7 +75,7 @@ function Hero() {
 function Stat({ value, suffix = "", decimals = 0, label }: { value: number; suffix?: string; decimals?: number; label: string }) {
   return (
     <div className="relative z-30">
-      <div className="text-4xl font-black leading-none text-gradient-brand sm:text-5xl lg:text-6xl">
+      <div className="text-[31px] font-black leading-none text-gradient-brand sm:text-[41px] lg:text-[51px]">
         <NumberTicker value={value} suffix={suffix} decimalPlaces={decimals} />
       </div>
       <div className="mt-2 text-sm font-bold uppercase tracking-wider text-muted-foreground">{label}</div>
