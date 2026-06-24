@@ -46,13 +46,13 @@ export function HeroScrollVideo({
     video.pause();
 
     let rafId = 0;
-    let ready = false;
+    let metaReady = false;
     let targetTime = 0;
 
     const update = () => {
       rafId = 0;
       const section = video.closest("section");
-      if (!section || !ready || !video.duration) return;
+      if (!section || !metaReady || !video.duration) return;
       const rect = section.getBoundingClientRect();
       const denom = rect.height || 1;
       let p = -rect.top / denom;
@@ -72,7 +72,7 @@ export function HeroScrollVideo({
     };
 
     const onLoaded = () => {
-      ready = true;
+      metaReady = true;
       update();
     };
 
