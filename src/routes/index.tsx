@@ -65,7 +65,7 @@ function Hero() {
           </div>
         </div>
         <div className="relative z-0">
-          <HeroScrollVideo src={h.scrollVideoUrl} />
+          <HeroScrollVideo src={h.scrollVideoUrl} mode={h.scrollVideoMode} />
         </div>
       </div>
     </section>

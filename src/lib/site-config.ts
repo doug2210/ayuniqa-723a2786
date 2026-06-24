@@ -134,6 +134,8 @@ export type HeroConfig = {
   backgroundColor: string;
   /** Optional video URL that replaces the default scroll-scrubbed hero video. */
   scrollVideoUrl: string | null;
+  /** Playback mode for the hero video: scrubbed by scroll, or auto-looping. */
+  scrollVideoMode: "scroll" | "loop";
 };
 
 export type ContactConfig = {
@@ -197,6 +199,7 @@ export const DEFAULT_HERO: HeroConfig = {
   stage: DEFAULT_HERO_STAGE,
   backgroundColor: "#F7F3E6",
   scrollVideoUrl: null,
+  scrollVideoMode: "scroll",
 };
 
 export const DEFAULT_CONTACT: ContactConfig = {
@@ -285,6 +288,8 @@ export function mergeConfig(stored: unknown): SiteConfig {
         typeof heroIn.scrollVideoUrl === "string" && heroIn.scrollVideoUrl.trim()
           ? heroIn.scrollVideoUrl
           : null,
+      scrollVideoMode:
+        heroIn.scrollVideoMode === "loop" ? "loop" : "scroll",
     },
     floating: {
       items: Array.isArray(s.floating?.items) && s.floating!.items.length > 0
