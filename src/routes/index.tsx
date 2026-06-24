@@ -41,6 +41,7 @@ function Hero() {
   const h = config.hero;
   return (
     <section className="relative isolate overflow-hidden" style={{ backgroundColor: h.backgroundColor }}>
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-1/2 bg-gradient-to-r from-[#FDFBF7] to-transparent" />
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-28">
         <div className="relative z-20 animate-fade-up">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-foreground/80 shadow-card">
