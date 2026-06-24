@@ -14,6 +14,8 @@ import {
   MessageSquare,
   Info,
   Share2,
+  Save,
+  Check,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -366,6 +368,8 @@ function HeroEditor({
         <HeroScrollEditor
           backgroundColor={value.backgroundColor}
           videoUrl={value.scrollVideoUrl}
+          videoMode={value.scrollVideoMode}
+          fullHero={value}
           onChange={(patch) => onChange({ ...value, ...patch })}
         />
       </TabsContent>
