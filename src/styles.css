@@ -116,7 +116,6 @@
 
 .dark {
 @layer base {
-  html { color-gamut: srgb; }
   * {
     border-color: var(--color-border);
   }
