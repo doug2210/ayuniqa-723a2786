@@ -1003,9 +1003,9 @@ function GamesEditor() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          All game content is stored in the database. Edits go live immediately on the public site.
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <p className="text-sm text-muted-foreground max-w-xl">
+          Clique em <strong>Editar</strong> para alterar os campos de um jogo, ou no ícone de lixeira para excluí-lo. As mudanças vão ao ar imediatamente no site público.
         </p>
         <Button size="sm" onClick={startNew}>
           <Plus className="!size-3.5" /> Add game
@@ -1034,7 +1034,7 @@ function GamesEditor() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                {g.category} · {g.volatility} · RTP {g.rtp}%
+                {g.category} · {g.volatility} · RTP {g.rtp}% · ordem {g.position}
               </div>
               <h4 className="font-bold">{g.title}</h4>
               <p className="truncate text-xs text-muted-foreground">/{g.slug}</p>
@@ -1045,7 +1045,7 @@ function GamesEditor() {
               </Button>
               <Button
                 size="sm"
-                variant="ghost"
+                variant="outline"
                 onClick={async () => {
                   if (!confirm(`Delete "${g.title}"? This cannot be undone.`)) return;
                   try {
@@ -1055,7 +1055,7 @@ function GamesEditor() {
                   }
                 }}
               >
-                <Trash2 className="!size-3.5 text-destructive" />
+                <Trash2 className="!size-3.5 text-destructive" /> Excluir
               </Button>
             </div>
           </Card>

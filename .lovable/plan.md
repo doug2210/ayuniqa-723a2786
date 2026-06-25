@@ -1,32 +1,63 @@
+## Problema
+
+Os jogos cadastrados aparecem corretamente na home (seção "Featured games") e na aba **Games** do admin — onde já existem os botões **Edit** e **lixeira** para alterar/excluir cada jogo. Mas a rota pública **`/games`** mostra "No games match your search." mesmo com o filtro em "All".
+
+Como home e `/games` usam exatamente o mesmo `useGames()` (Lovable Cloud, tabela `games`), o bug está no filtro/render dessa página, não nos dados.
+
+## Causa provável
+
+`src/routes/games.index.tsx` filtra por categoria com comparação **case/whitespace-sensitive**:
+
+```ts
+games.filter((g) =>
+  (cat === "All" || g.category === cat) && ...
+)
+```
+
+E a lista de chips de categoria é construída a partir da constante fixa `GAME_CATEGORIES = ["Classic", "Adventure", "Fantasy", "Fruits"]`. Se a categoria de um jogo no banco veio com case diferente, espaço extra, ou um valor fora dessa lista (ex.: "classic", "Slots", "Megaways"), o jogo:
+
+1. Some quando o usuário clica em qualquer chip,
+2. E o chip dele nunca aparece nas opções.
+
+Hipótese secundária: o estado inicial `cat = "All"` poderia estar sendo sobrescrito por algum efeito/hidratação SSR, mas isso é menos provável — a verificação abaixo confirma.
+
 ## Plano
 
-### 1. Re-encodar o vídeo do hero sem faixa de áudio
+### 1. Confirmar a causa (diagnóstico rápido)
 
-`src/assets/hero-scroll-v2.mp4` é o asset usado no modo loop. Faixas de áudio (mesmo silenciosas) fazem o Safari recusar autoplay com mais frequência. Vou:
+- Abrir `/games` via Playwright autenticado, capturar console + os valores reais de `category` que o `useGames()` retorna (via `window` debug ou snapshot).
+- Comparar com `GAME_CATEGORIES`.
 
-- Baixar o MP4 atual via URL do `.asset.json`.
-- Rodar `ffmpeg -i input.mp4 -c:v copy -an output.mp4` (remove áudio, preserva vídeo sem re-encoding — rápido e sem perda).
-- Subir o novo arquivo com `lovable-assets create` e sobrescrever `src/assets/hero-scroll-v2.mp4.asset.json` com o novo pointer.
-- Deletar o asset antigo via `delete_asset` (opcional, mas mantém limpo).
+### 2. Corrigir `/games` para ser tolerante a dados reais
 
-Fazer o mesmo para `src/assets/hero-scroll.mp4` se também for usado em algum lugar.
+Em `src/routes/games.index.tsx`:
 
-### 2. Reforçar o autoplay no `HeroScrollVideo.tsx` (modo loop)
+- **Derivar a lista de categorias dos jogos do banco** (união de `GAME_CATEGORIES` + categorias distintas presentes em `games`), em vez de usar só a constante hardcoded. Assim qualquer categoria nova cadastrada via admin aparece como chip.
+- **Comparar categoria case-insensitive e com `trim()`**, para não esconder jogos por diferença de capitalização.
+- **Buscar também em `tagline` e `category`** (não só `title`) para o input de busca, comportamento esperado de uma vitrine.
+- Manter `cat === "All"` como default mostrando tudo.
 
-Mudanças no `useEffect` para o modo `loop`:
+### 3. Padronizar a entrada no admin
 
-- **Setar `defaultMuted = true` antes do `load()`** — alguns Safari só respeitam `muted` se for o estado *default*, não atribuído depois.
-- **Adicionar `IntersectionObserver`** que dispara `tryPlay()` quando o `<video>` entra no viewport. Resolve casos onde Safari adia o autoplay até o elemento ser visível.
-- **Disparar `tryPlay()` também em `play`/`pause` events** caso o Safari pause sozinho.
-- Manter o fallback de gesto que já existe.
+Em `src/components/admin/AdminPanel.tsx` (form de jogo) e/ou `src/lib/games-api.ts`:
 
-### 3. Verificação
+- No `toRow()` do upsert, normalizar `category` e `volatility` com `trim()` para nunca salvar espaços extras.
+- O `Select` do form já restringe à lista oficial, então cadastros novos ficam consistentes; a normalização cobre os registros antigos editados.
 
-- Confirmar build OK.
-- Pedir para você testar em Safari macOS/iOS (não consigo reproduzir Safari no sandbox — só Chromium via Playwright).
+### 4. Reforçar a aba Games do admin (clareza, não funcionalidade)
 
-## Limitação
+A funcionalidade de editar/excluir já existe, mas o usuário não notou. Pequenos ajustes:
 
-Se o iPhone estiver em **Low Power Mode**, nenhum vídeo dá autoplay — é regra do iOS. Nesse caso só um overlay "tap to play" resolve, e nem vou implementar agora.
+- Trocar o ícone só-lixeira por **"Excluir" + ícone** para deixar a ação explícita.
+- Adicionar um cabeçalho curto acima da lista: *"Clique em **Editar** para alterar os campos ou na lixeira para remover. Mudanças vão ao ar imediatamente."*
+- Mostrar `position` (ordem) no card, já que ela controla a ordem da vitrine.
 
-Pronto para executar?
+### 5. Verificação
+
+- Playwright em `/games`: confirmar que todos os jogos cadastrados aparecem com filtro "All" e que filtrar por uma categoria existente mantém os respectivos jogos visíveis.
+- Confirmar no admin que Editar abre o form e Excluir remove (após confirmação) — sem regressão.
+
+## Fora do escopo
+
+- Não estou alterando o schema da tabela `games` nem as policies RLS — os dados já estão sendo lidos corretamente em outras telas.
+- Não estou adicionando uma seção separada "Featured na home"; a home já mostra os 4 primeiros por `position`, então editar o campo **Display order** no admin controla isso.

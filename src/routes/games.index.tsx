@@ -25,12 +25,34 @@ function GamesPage() {
   const [cat, setCat] = useState<string>("All");
   const { data: games = [], isLoading } = useGames();
 
+  const norm = (s: string) => s.trim().toLowerCase();
+
+  // Build category chips from the official list + any extra categories that
+  // already exist in the database, so admin-added categories show up.
+  const categories = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const c of GAME_CATEGORIES) seen.set(norm(c), c);
+    for (const g of games) {
+      const k = norm(g.category ?? "");
+      if (k && !seen.has(k)) seen.set(k, g.category.trim());
+    }
+    return Array.from(seen.values());
+  }, [games]);
+
   const filtered = useMemo(
     () =>
       games.filter(
-        (g) =>
-          (cat === "All" || g.category === cat) &&
-          (q === "" || g.title.toLowerCase().includes(q.toLowerCase())),
+        (g) => {
+          const matchesCat = cat === "All" || norm(g.category) === norm(cat);
+          if (!matchesCat) return false;
+          if (q === "") return true;
+          const needle = norm(q);
+          return (
+            norm(g.title).includes(needle) ||
+            norm(g.tagline ?? "").includes(needle) ||
+            norm(g.category ?? "").includes(needle)
+          );
+        },
       ),
     [q, cat, games],
   );
@@ -54,7 +76,7 @@ function GamesPage() {
               <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search games…" className="pl-9 h-11" />
             </div>
             <div className="flex flex-wrap gap-2">
-              {["All", ...GAME_CATEGORIES].map((c) => (
+              {["All", ...categories].map((c) => (
                 <button
                   key={c}
                   onClick={() => setCat(c)}
