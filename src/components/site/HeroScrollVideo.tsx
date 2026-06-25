@@ -14,10 +14,15 @@ export function HeroScrollVideo({
 
     // Safari-specific: enforce the autoplay contract imperatively because
     // some Safari builds ignore the JSX props when `src` is set after mount.
+    // Safari only treats the element as "muted by default" — required for
+    // autoplay — when defaultMuted is set BEFORE load(). Assigning .muted
+    // after the fact is not enough.
+    video.defaultMuted = true;
     video.muted = true;
     video.setAttribute("muted", "");
     video.setAttribute("playsinline", "");
     video.setAttribute("webkit-playsinline", "true");
+    video.setAttribute("autoplay", "");
 
     const tryPlay = () => {
       const p = video.play();
@@ -62,18 +67,41 @@ export function HeroScrollVideo({
       const onVisibility = () => {
         if (!document.hidden) tryPlay();
       };
+      const onPause = () => {
+        // Safari sometimes pauses on its own (tab switch, scroll pause). Resume.
+        if (!video.ended) tryPlay();
+      };
       if (video.readyState >= 2) tryPlay();
       video.addEventListener("loadedmetadata", tryPlay);
       video.addEventListener("loadeddata", tryPlay);
       video.addEventListener("canplay", tryPlay);
       video.addEventListener("timeupdate", onTimeUpdate);
+      video.addEventListener("pause", onPause);
       document.addEventListener("visibilitychange", onVisibility);
+
+      // Safari often defers autoplay until the element is actually in the
+      // viewport. Trigger play() the moment it becomes visible.
+      let observer: IntersectionObserver | null = null;
+      if (typeof IntersectionObserver !== "undefined") {
+        observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) tryPlay();
+            }
+          },
+          { threshold: 0.1 },
+        );
+        observer.observe(video);
+      }
+
       return () => {
         video.removeEventListener("loadedmetadata", tryPlay);
         video.removeEventListener("loadeddata", tryPlay);
         video.removeEventListener("canplay", tryPlay);
         video.removeEventListener("timeupdate", onTimeUpdate);
+        video.removeEventListener("pause", onPause);
         document.removeEventListener("visibilitychange", onVisibility);
+        observer?.disconnect();
         video.pause();
       };
     }

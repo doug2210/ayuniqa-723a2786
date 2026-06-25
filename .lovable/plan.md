@@ -1,54 +1,32 @@
-## Diagnóstico
+## Plano
 
-A diferença que você vê é o **perfil de cor do monitor**, não cache. iMacs renderizam em Display P3 (gamut maior); Windows típico em sRGB. Quando o CSS define cor em `oklch()`, o navegador interpola dentro do gamut do display — então o mesmo valor sai com tom diferente em cada tela.
+### 1. Re-encodar o vídeo do hero sem faixa de áudio
 
-O `--background` do hero já está em hex sRGB (`#FDFBF7`), mas o resto da paleta (foreground, card, muted, border, primary, accent, brand) continua em `oklch()`, e essas cores aparecem ao redor do hero (texto, cards, bordas, botões laranja). Por isso a sensação geral de "tom diferente" persiste no Mac.
+`src/assets/hero-scroll-v2.mp4` é o asset usado no modo loop. Faixas de áudio (mesmo silenciosas) fazem o Safari recusar autoplay com mais frequência. Vou:
 
-## Solução
+- Baixar o MP4 atual via URL do `.asset.json`.
+- Rodar `ffmpeg -i input.mp4 -c:v copy -an output.mp4` (remove áudio, preserva vídeo sem re-encoding — rápido e sem perda).
+- Subir o novo arquivo com `lovable-assets create` e sobrescrever `src/assets/hero-scroll-v2.mp4.asset.json` com o novo pointer.
+- Deletar o asset antigo via `delete_asset` (opcional, mas mantém limpo).
 
-Converter todos os tokens de cor de `oklch()` para **hex sRGB** em `src/styles.css`. sRGB é o gamut que toda tela renderiza igual — é o denominador comum entre iMac P3, Windows sRGB, celular, etc.
+Fazer o mesmo para `src/assets/hero-scroll.mp4` se também for usado em algum lugar.
 
-### Tokens a converter (mantendo o mesmo visual sRGB)
+### 2. Reforçar o autoplay no `HeroScrollVideo.tsx` (modo loop)
 
-```
---brand-grey:         #494949
---brand-yellow:       #F6EB23
---brand-orange:       #F24B02
---brand-light-orange: #F5A514
+Mudanças no `useEffect` para o modo `loop`:
 
---foreground:         #3B342C
---card:               #FFFFFF
---card-foreground:    #3B342C
---popover:            #FFFFFF
---popover-foreground: #3B342C
---primary-foreground: #FFFFFF
---secondary:          #F7F2EA
---secondary-foreground: #494949
---muted:              #F2EDE5
---muted-foreground:   #7A6F62
---accent-foreground:  #FFFFFF
---destructive:        #DC2626
---destructive-foreground: #FFFFFF
---border:             #E8E1D6
---input:              #E8E1D6
+- **Setar `defaultMuted = true` antes do `load()`** — alguns Safari só respeitam `muted` se for o estado *default*, não atribuído depois.
+- **Adicionar `IntersectionObserver`** que dispara `tryPlay()` quando o `<video>` entra no viewport. Resolve casos onde Safari adia o autoplay até o elemento ser visível.
+- **Disparar `tryPlay()` também em `play`/`pause` events** caso o Safari pause sozinho.
+- Manter o fallback de gesto que já existe.
 
-(tokens da sidebar e chart-* também convertidos por consistência)
-```
+### 3. Verificação
 
-Os brand colors `#494949`, `#F6EB23`, `#F24B02`, `#F5A514` já são as cores oficiais que estavam no comentário do arquivo — voltam exatas, sem reinterpretação por `oklch()`.
+- Confirmar build OK.
+- Pedir para você testar em Safari macOS/iOS (não consigo reproduzir Safari no sandbox — só Chromium via Playwright).
 
-### Ajustes complementares
+## Limitação
 
-- Substituir `color-mix(in oklab, ...)` nas variáveis `--shadow-glow` e `--shadow-card` por `rgb(... / alpha)` direto, pelo mesmo motivo (oklab interpola em gamut maior).
-- Manter `color-scheme: light` e o meta `theme-color` que já estão no lugar.
+Se o iPhone estiver em **Low Power Mode**, nenhum vídeo dá autoplay — é regra do iOS. Nesse caso só um overlay "tap to play" resolve, e nem vou implementar agora.
 
-## Cache
-
-Cache de navegador **não** está causando isso — o Vite já versiona o CSS com hash, então quando você publica, a URL muda e o navegador busca a versão nova. Sem ação necessária aí.
-
-## Verificação
-
-Após implementar:
-- Abrir no Mac e no Windows lado a lado em modo anônimo.
-- O bege do hero deve ficar idêntico, e os laranjas dos botões/brand também.
-- Se ainda houver diferença sutil, é calibração de hardware do monitor — fora do alcance de código.
+Pronto para executar?
