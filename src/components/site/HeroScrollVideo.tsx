@@ -134,7 +134,6 @@ export function HeroScrollVideo({
       ref={videoRef}
       src={ready ? src || videoAsset.url : undefined}
       muted
-      defaultMuted
       playsInline
       preload="auto"
       autoPlay={mode === "loop"}
