@@ -1,46 +1,54 @@
-# Tornar a cor do hero consistente entre monitores e SOs
+## Diagnóstico
 
-A diferença visual vem de três fontes que dá para neutralizar no código: (1) navegador "auto dark mode" repintando a página, (2) reinterpretação de `oklch()` em telas wide-gamut (P3), (3) ausência de declaração explícita de gamut/esquema de cor. O plano abaixo trava a página em **sRGB + light** e usa cores em sRGB no hero, de modo que o mesmo arquivo de cor seja enviado e renderizado igual em qualquer monitor calibrado em sRGB padrão.
+A diferença que você vê é o **perfil de cor do monitor**, não cache. iMacs renderizam em Display P3 (gamut maior); Windows típico em sRGB. Quando o CSS define cor em `oklch()`, o navegador interpola dentro do gamut do display — então o mesmo valor sai com tom diferente em cada tela.
 
-> Importante: nenhuma mudança de código consegue compensar tela mal calibrada, brilho desigual, ou filtros do SO ligados (Night Shift / True Tone / Night Light). Esses precisam ficar desligados no monitor "diferente" — ainda assim, depois dessa mudança, a margem de variação cai significativamente.
+O `--background` do hero já está em hex sRGB (`#FDFBF7`), mas o resto da paleta (foreground, card, muted, border, primary, accent, brand) continua em `oklch()`, e essas cores aparecem ao redor do hero (texto, cards, bordas, botões laranja). Por isso a sensação geral de "tom diferente" persiste no Mac.
 
-## Mudanças
+## Solução
 
-### 1. `src/routes/__root.tsx` — forçar light + sRGB no documento
-Adicionar nas `meta` do `head()`:
-- `{ name: "color-scheme", content: "light" }`
-- `{ name: "supported-color-schemes", content: "light" }`
-- `{ name: "theme-color", content: "#FDFBF7" }`
+Converter todos os tokens de cor de `oklch()` para **hex sRGB** em `src/styles.css`. sRGB é o gamut que toda tela renderiza igual — é o denominador comum entre iMac P3, Windows sRGB, celular, etc.
 
-Isso desativa o "Auto Dark Mode for Web Contents" do Chrome/Edge e impede que o SO escureça automaticamente fundos claros.
+### Tokens a converter (mantendo o mesmo visual sRGB)
 
-### 2. `src/styles.css` — gamut e esquema fixos, cor de fundo em sRGB
-- No topo de `:root` adicionar:
-  ```css
-  color-scheme: light;
-  ```
-- Adicionar:
-  ```css
-  html { color-gamut: srgb; }
-  ```
-- Trocar `--background: oklch(0.995 0.005 80);` por `#FDFBF7` (mesmo bege quase branco do gradiente, mas em sRGB hex — interpretado exatamente igual em qualquer navegador, sem conversão de espaço de cor).
-- Remover o bloco `.dark { ... }` inteiro **ou** neutralizá-lo (não temos toggle de tema; o bloco só existe e arrisca ser aplicado se algum script externo adicionar a classe). Vou remover, é mais seguro.
+```
+--brand-grey:         #494949
+--brand-yellow:       #F6EB23
+--brand-orange:       #F24B02
+--brand-light-orange: #F5A514
 
-### 3. `src/routes/index.tsx` — gradiente do hero já em sRGB
-Manter `from-[#FDFBF7]` (já é hex sRGB). Sem mudança.
+--foreground:         #3B342C
+--card:               #FFFFFF
+--card-foreground:    #3B342C
+--popover:            #FFFFFF
+--popover-foreground: #3B342C
+--primary-foreground: #FFFFFF
+--secondary:          #F7F2EA
+--secondary-foreground: #494949
+--muted:              #F2EDE5
+--muted-foreground:   #7A6F62
+--accent-foreground:  #FFFFFF
+--destructive:        #DC2626
+--destructive-foreground: #FFFFFF
+--border:             #E8E1D6
+--input:              #E8E1D6
 
-### 4. Garantir que `h.backgroundColor` no admin seja sempre um hex sRGB
-O hero usa `style={{ backgroundColor: h.backgroundColor }}`. Se o valor configurado for um `oklch(...)`, volta a variar entre telas P3. Confirmar no `site-config` que o default é hex (`#...`) e, no admin, manter o color picker em hex. Sem mudança de código necessária se já é hex; só sinalizo para você não trocar por `oklch` depois.
+(tokens da sidebar e chart-* também convertidos por consistência)
+```
 
-## Detalhes técnicos
+Os brand colors `#494949`, `#F6EB23`, `#F24B02`, `#F5A514` já são as cores oficiais que estavam no comentário do arquivo — voltam exatas, sem reinterpretação por `oklch()`.
 
-- `color-scheme: light` + meta `color-scheme` é o que **desliga** o Auto Dark do Chrome/Edge nesta página. Sem isso, a partir do Chrome 96 o navegador pode repintar fundos claros como escuros conforme preferência do usuário, mesmo o site sendo claro.
-- `color-gamut: srgb` em `html` é uma dica ao navegador para evitar mapeamento P3 ampliado em telas wide-gamut; combinada com cores em hex (sRGB), elimina a maior parte da variação "bege levemente mais quente/frio".
-- `oklch()` é matematicamente preciso mas o resultado **renderizado** depende do gamut do display. Trocar só o `--background` para hex já resolve o hero; o resto dos tokens (laranja da marca etc.) pode continuar em `oklch` porque saturações altas variam menos perceptivelmente que tons quase-brancos.
+### Ajustes complementares
 
-## O que NÃO vai mudar
+- Substituir `color-mix(in oklab, ...)` nas variáveis `--shadow-glow` e `--shadow-card` por `rgb(... / alpha)` direto, pelo mesmo motivo (oklab interpola em gamut maior).
+- Manter `color-scheme: light` e o meta `theme-color` que já estão no lugar.
 
-- Tipografia, layout, vídeo do hero, conteúdo, gradientes da marca.
-- Tokens de cor de marca (`--brand-orange`, etc.) continuam em `oklch`.
+## Cache
 
-Aprovando, eu aplico as mudanças 1, 2 e remoção do `.dark`.
+Cache de navegador **não** está causando isso — o Vite já versiona o CSS com hash, então quando você publica, a URL muda e o navegador busca a versão nova. Sem ação necessária aí.
+
+## Verificação
+
+Após implementar:
+- Abrir no Mac e no Windows lado a lado em modo anônimo.
+- O bege do hero deve ficar idêntico, e os laranjas dos botões/brand também.
+- Se ainda houver diferença sutil, é calibração de hardware do monitor — fora do alcance de código.
