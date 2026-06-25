@@ -1,29 +1,33 @@
-## Issues
+# Hero video não toca no Safari até navegar e voltar
 
-**1. Flash of old hero video on reload.**
-`SiteConfigProvider` mounts with `DEFAULT_SITE_CONFIG` (where `scrollVideoUrl = null`), so `HeroScrollVideo` immediately renders the bundled fallback (`hero-scroll-v2.mp4`). A moment later Supabase responds with the admin-saved `scrollVideoUrl` and the `<video src>` swaps — that swap is the "flash" the user sees.
+## Causa
 
-**2. Loop has a small pause before restarting.**
-The native `<video loop>` attribute is currently set imperatively in `useEffect` after mount (`video.loop = true`), so the first cycle can end before `loop` is applied. Even when applied, the browser's loop-seek introduces a noticeable hiccup, made worse if the source mp4 carries an audio track or non-faststart `moov` atom.
+O `<video>` é renderizado só depois que a config do Supabase resolve (`ready=true`), porque enquanto isso renderizamos um `<div>` placeholder. No primeiro carregamento, quando o elemento finalmente entra no DOM, o `video.play()` é disparado dentro de um `useEffect` assíncrono — fora do contexto do gesto inicial do usuário. O Safari (desktop e iOS) é mais rigoroso que Chrome/Firefox quanto a autoplay e bloqueia silenciosamente nesse cenário. Ao navegar para `/games` e voltar, o componente já remonta com `ready=true` desde o primeiro render e com o histórico de interação do usuário (clique no link), então o `play()` é aceito.
 
-## Fix
+Pontos secundários que pioram o caso no Safari:
+- Faltam atributos críticos `webkit-playsinline` e `muted` definido como atributo HTML (não só prop) antes do primeiro `play()`.
+- Sem `poster`, o elemento fica preto até a primeira frame decodificar — reforça a percepção de "não funciona".
+- Em modo `loop`, o `play()` só roda quando `loadeddata` dispara; no Safari, `loadeddata` pode demorar se `preload="auto"` competir com outros recursos.
 
-### `src/components/site/HeroScrollVideo.tsx`
-- Accept a `ready` prop (or use the existing site config `loaded` flag in the parent). When the parent passes `ready=false`, render nothing (or a transparent placeholder of the same aspect) so the bundled fallback never paints before Supabase resolves.
-- Set `loop` and `autoPlay` declaratively in JSX when `mode === "loop"` (instead of toggling in `useEffect`) so the attribute exists from the first frame.
-- For smoother looping, add a `timeupdate` handler in loop mode that, when `duration - currentTime < 0.15s`, resets `currentTime = 0` immediately and calls `play()` — this short-circuits the browser's end-of-stream seek and eliminates the visible pause. Keep the native `loop` attribute as a safety net.
-- Keep scroll mode behavior unchanged.
+## Plano
 
-### `src/routes/index.tsx`
-- Pull `loaded` from `useSiteConfig()` and pass it to `<HeroScrollVideo ready={loaded} ... />`. The hero column already has a fixed aspect (max-width 560px, intrinsic video aspect) — reserve the box via a wrapping `div` with `aspect-video` (or matching aspect) so layout doesn't jump while we wait one tick for Supabase.
+### 1. `src/components/site/HeroScrollVideo.tsx`
+- Renderizar o `<video>` **sempre**, mesmo quando `ready=false`, mas com `src` vazio e `visibility:hidden` até `ready=true`. Isso garante que o elemento exista cedo e que `play()` aconteça no mesmo elemento que estava no DOM desde o início (sem remontagem). Substitui o atual `<div>` placeholder.
+- Adicionar atributos explícitos no JSX: `muted` (boolean), `playsInline`, `autoPlay` (loop), `loop`, `controls={false}`, e o atributo legado do Safari via `ref` — `video.setAttribute("webkit-playsinline", "true")` e `video.muted = true` imperativo logo no mount (Safari ignora a prop JSX em alguns casos quando `src` muda).
+- No effect do modo `loop`: chamar `video.load()` quando `src` mudar, depois `tryPlay()`. Encapsular `tryPlay` para também ser chamado nos eventos `canplay` e `loadedmetadata` (não só `loadeddata`), aumentando a chance de pegar a primeira janela permitida pelo Safari.
+- Adicionar fallback de gesto: se o primeiro `play()` rejeitar (Safari sem gesto), registrar listeners `pointerdown`/`touchstart`/`keydown` **uma vez** no `window` que disparam `video.play()` no próximo gesto e se removem em seguida. Isso garante que qualquer interação subsequente (scroll com toque, clique em qualquer lugar) inicie o vídeo, sem precisar navegar para outra página.
+- Adicionar também um listener `visibilitychange` que rechama `tryPlay()` ao voltar para a aba (cobre o caso de tab em background).
 
-### Re-encode the bundled fallback video (optional but recommended)
-- The current `hero-scroll-v2.mp4` likely has an audio track and/or trailing silence that contributes to the loop gap. Re-encode with `ffmpeg -i in.mp4 -an -movflags +faststart -pix_fmt yuv420p -c:v libx264 -crf 20 out.mp4` and re-upload as a new asset, replacing `src/assets/hero-scroll-v2.mp4.asset.json`. This makes both the bundled fallback and any user who keeps the default loop seamlessly.
+### 2. Sem mudanças em `src/routes/index.tsx`
+A prop `ready={loaded}` continua sendo passada — agora ela só controla a visibilidade do elemento, não a montagem.
 
-### Out of scope
-- No changes to admin panel UI, background gradient, stats, or other hero content.
-- No changes to site-config persistence model (Supabase remains source of truth).
+## Detalhes técnicos
 
-## Result
-- On refresh the hero video area stays empty for a beat (no layout shift), then paints the correct admin-selected video once — no swap, no flash.
-- In loop mode the video restarts without the visible pause.
+- Manter `autoPlay` + `muted` + `playsInline` é o contrato mínimo do Safari para autoplay; o gesto-fallback cobre o caso em que mesmo isso é negado (ex.: Low Power Mode no iOS, configurações de mídia restritivas no Safari macOS).
+- `video.load()` após troca de `src` é necessário no Safari para sair do estado `NETWORK_EMPTY` quando o elemento foi renderizado antes de ter `src`.
+- Não mexer no modo `scroll` além de garantir os mesmos atributos no JSX — o scroll-scrub não depende de `play()`, então já funciona no Safari hoje.
+
+## Verificação
+
+- `bunx tsgo --noEmit` deve passar.
+- Após o fix, abrir `/` em Safari (ou via Playwright com user-agent Safari) e confirmar que o vídeo começa a tocar sem precisar navegar para outra rota.

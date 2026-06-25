@@ -12,15 +12,42 @@ export function HeroScrollVideo({
     const video = videoRef.current;
     if (!video || !ready) return;
 
+    // Safari-specific: enforce the autoplay contract imperatively because
+    // some Safari builds ignore the JSX props when `src` is set after mount.
+    video.muted = true;
+    video.setAttribute("muted", "");
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "true");
+
+    const tryPlay = () => {
+      const p = video.play();
+      if (p && typeof p.catch === "function") {
+        p.catch(() => {
+          // Safari blocked autoplay — resume on the next user gesture.
+          const resume = () => {
+            const r = video.play();
+            if (r && typeof r.catch === "function") r.catch(() => {});
+            window.removeEventListener("pointerdown", resume);
+            window.removeEventListener("touchstart", resume);
+            window.removeEventListener("keydown", resume);
+            window.removeEventListener("scroll", resume);
+          };
+          window.addEventListener("pointerdown", resume, { once: true });
+          window.addEventListener("touchstart", resume, { once: true });
+          window.addEventListener("keydown", resume, { once: true });
+          window.addEventListener("scroll", resume, { once: true, passive: true });
+        });
+      }
+    };
+
+    // After src changes Safari may sit in NETWORK_EMPTY until load() is called.
+    try {
+      video.load();
+    } catch {
+      /* noop */
+    }
+
     if (mode === "loop") {
-      // Autoplay loop — no scroll scrubbing. `loop` is also set declaratively
-      // on the element so the attribute is live from the first frame.
-      const tryPlay = () => {
-        const p = video.play();
-        if (p && typeof p.catch === "function") p.catch(() => {});
-      };
-      // Pre-empt the browser's end-of-stream seek (which shows a small pause)
-      // by snapping back to 0 just before the final frame.
       const onTimeUpdate = () => {
         if (!video.duration) return;
         if (video.duration - video.currentTime < 0.15) {
@@ -32,12 +59,21 @@ export function HeroScrollVideo({
           tryPlay();
         }
       };
+      const onVisibility = () => {
+        if (!document.hidden) tryPlay();
+      };
       if (video.readyState >= 2) tryPlay();
-      else video.addEventListener("loadeddata", tryPlay, { once: true });
+      video.addEventListener("loadedmetadata", tryPlay);
+      video.addEventListener("loadeddata", tryPlay);
+      video.addEventListener("canplay", tryPlay);
       video.addEventListener("timeupdate", onTimeUpdate);
+      document.addEventListener("visibilitychange", onVisibility);
       return () => {
+        video.removeEventListener("loadedmetadata", tryPlay);
         video.removeEventListener("loadeddata", tryPlay);
+        video.removeEventListener("canplay", tryPlay);
         video.removeEventListener("timeupdate", onTimeUpdate);
+        document.removeEventListener("visibilitychange", onVisibility);
         video.pause();
       };
     }
@@ -93,23 +129,19 @@ export function HeroScrollVideo({
     };
   }, [src, mode, ready]);
 
-  if (!ready) {
-    // Reserve space without painting any video to avoid a flash of the
-    // bundled fallback before the saved config resolves.
-    return <div className="mx-auto block aspect-video w-full max-w-[560px]" aria-hidden />;
-  }
-
   return (
     <video
       ref={videoRef}
-      src={src || videoAsset.url}
+      src={ready ? src || videoAsset.url : undefined}
       muted
+      defaultMuted
       playsInline
       preload="auto"
       autoPlay={mode === "loop"}
       loop={mode === "loop"}
       disablePictureInPicture
       className="mx-auto block h-auto w-full max-w-[560px]"
+      style={ready ? undefined : { visibility: "hidden", aspectRatio: "16 / 9" }}
     />
   );
 }
