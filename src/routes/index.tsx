@@ -50,14 +50,17 @@ function Hero() {
 
   return (
     <div data-hero-root className="relative isolate w-full overflow-hidden" style={{ backgroundColor: h.backgroundColor }}>
-      {/* Video background — true full-bleed, no parent constraint */}
+      {/* Solid background for tablet/mobile; video only on desktop */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        <HeroScrollVideo
-          src={h.scrollVideoUrl}
-          mode={h.scrollVideoMode}
-          ready={loaded}
-          sideCropPct={sideCropPct}
-        />
+        <div className="block lg:hidden absolute inset-0" style={{ backgroundColor: "#e2d6ca" }} />
+        <div className="hidden lg:block absolute inset-0 overflow-hidden">
+          <HeroScrollVideo
+            src={h.scrollVideoUrl}
+            mode={h.scrollVideoMode}
+            ready={loaded}
+            sideCropPct={sideCropPct}
+          />
+        </div>
       </div>
       {/* White gradient overlay — in front of video, behind text, anchored to screen left */}
       <div className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-full max-w-[900px] bg-gradient-to-r from-[#FDFBF7] via-[#FDFBF7]/90 to-transparent" />
