@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { z } from "zod";
 import { Mail, MapPin, Phone, Check } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,30 @@ import { ScrollReveal } from "@/components/site/ScrollReveal";
 import { fireConfetti } from "@/components/site/ConfettiBurst";
 import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
 import { supabase } from "@/integrations/supabase/client";
+
+const contactSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, { message: "Please enter your name." })
+    .max(120, { message: "Name must be 120 characters or fewer." }),
+  company: z
+    .string()
+    .trim()
+    .max(160, { message: "Company must be 160 characters or fewer." })
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : null)),
+  email: z
+    .string()
+    .trim()
+    .email({ message: "Please enter a valid email address." })
+    .max(254, { message: "Email must be 254 characters or fewer." }),
+  message: z
+    .string()
+    .trim()
+    .min(1, { message: "Please write a short message." })
+    .max(5000, { message: "Message must be 5000 characters or fewer." }),
+});
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -68,16 +93,23 @@ function Contact() {
                   setError(null);
                   const form = e.currentTarget as HTMLFormElement;
                   const fd = new FormData(form);
-                  const payload = {
+                  const parsed = contactSchema.safeParse({
                     name: String(fd.get("name") ?? ""),
-                    company: String(fd.get("company") ?? "") || null,
+                    company: String(fd.get("company") ?? ""),
                     email: String(fd.get("email") ?? ""),
                     message: String(fd.get("message") ?? ""),
-                  };
-                  const { error } = await supabase.from("contact_messages").insert(payload);
+                  });
+                  if (!parsed.success) {
+                    setBusy(false);
+                    setError(parsed.error.issues[0]?.message ?? "Please review the form and try again.");
+                    return;
+                  }
+                  const { error: insertError } = await supabase
+                    .from("contact_messages")
+                    .insert(parsed.data);
                   setBusy(false);
-                  if (error) {
-                    setError(error.message);
+                  if (insertError) {
+                    setError("Submission failed, please try again.");
                     return;
                   }
                   setSent(true);
