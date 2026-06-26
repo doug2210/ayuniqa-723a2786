@@ -1,35 +1,32 @@
-## Problema
+# Vídeo do hero em wrapper full-bleed independente
 
-O vídeo do hero (Astronaut) tem barras pretas embutidas nas laterais do arquivo `.mp4`. A solução atual usa `transform: scale(1.8)`, que amplia o vídeo **uniformemente** — por isso ele aparece "muito zoomed/desproporcional" verticalmente, e dependendo da largura da tela ainda sobra borda à esquerda.
+## Diagnóstico
 
-A forma correta é recortar **somente** o eixo horizontal, mantendo a proporção do conteúdo intacta.
+O `<section>` do hero em `src/routes/index.tsx` já é `w-full`, mas o vídeo está dentro de um `<div class="absolute inset-0">` que herda a largura do `<section>`. Se qualquer ancestral (preview, layout, transformações futuras) limitar a largura da section, o vídeo limita junto e aparecem barras pretas nas laterais — exatamente o sintoma do print.
 
-## Solução
+A solução é desacoplar o vídeo do container de conteúdo: ele passa a se posicionar pela **viewport**, não pelo pai.
 
-Trocar a prop `scale` por uma prop `sideCropPct` (percentual de barra preta a cortar em cada lado). O `<video>` passa a ser:
+## Mudanças
 
-- `width: 100% / (1 - 2 * sideCropPct/100)` → o vídeo fica mais largo que o container exatamente o suficiente para empurrar as barras pretas para fora.
-- `left: -sideCropPct%` → centraliza o conteúdo útil.
-- `height: 100%`, `object-fit: cover` → mantém a altura preenchendo a seção, sem zoom vertical extra.
-- O wrapper já tem `overflow-hidden`, então o excedente lateral (as barras) some.
+**`src/routes/index.tsx` — função `Hero`:**
 
-Sem `transform: scale`, sem distorção: o miolo do vídeo ocupa 100% da largura da tela em qualquer breakpoint, e a altura segue o `object-cover` natural.
+1. Adicionar `overflow-hidden` ao `<section>` (evita scroll horizontal causado pelo full-bleed).
+2. Trocar o wrapper atual do vídeo:
+   ```
+   <div className="absolute inset-0 z-0 overflow-hidden">
+   ```
+   por um wrapper full-bleed que ignora a largura do pai usando o padrão `left-1/2 -translate-x-1/2 w-screen`:
+   ```
+   <div className="pointer-events-none absolute inset-y-0 left-1/2 z-0 w-screen -translate-x-1/2 overflow-hidden">
+   ```
+   Assim o vídeo sempre ocupa 100vw, independente de qualquer container que envolva a section.
 
-## Valor inicial e ajuste fino
+3. Nenhuma mudança no conteúdo de texto (continua dentro do `max-w-7xl` com alinhamento atual).
 
-Como cada vídeo enviado pelo admin pode ter barras de tamanhos diferentes, vou:
-
-1. Aplicar um padrão de **18%** de corte lateral quando a URL contém `Astronaut-hero` (estimativa baseada em vídeos quadrados 624×624 desse tipo de asset; refinamos visualmente).
-2. Adicionar um campo no **AdminPanel** ("Corte lateral do vídeo (%)") com slider 0–30 para o usuário ajustar ao vivo o quanto cortar de cada lado, persistido em `site-config` como `hero.scrollVideoSideCropPct`.
-
-## Arquivos a alterar
-
-- `src/components/site/HeroScrollVideo.tsx` — remover prop `scale`, adicionar `sideCropPct`; aplicar via `style.width` + `style.left` (com `position: absolute`) em vez de `transform: scale`.
-- `src/routes/index.tsx` — passar `sideCropPct={h.scrollVideoSideCropPct ?? (URL contém Astronaut ? 18 : 0)}`.
-- `src/lib/site-config.ts` — adicionar campo `scrollVideoSideCropPct: number` ao tipo/default/parser do hero.
-- `src/components/admin/AdminPanel.tsx` — adicionar slider 0–30% para ajustar.
+**`HeroScrollVideo.tsx`:** sem alterações. O `sideCropPct` continua funcionando para cortar barras pretas embutidas no arquivo do vídeo (problema diferente, do próprio mp4).
 
 ## Verificação
 
-- Build passa.
-- Playwright em 1280×1800 e 375×800: nenhuma borda preta visível à esquerda/direita, vídeo ocupa 100% da largura, altura sem zoom exagerado (proporção natural do conteúdo).
+- Playwright em viewports 1280, 1720 e 375: confirmar que o `<video>` tem `width === window.innerWidth` e `getBoundingClientRect().x === 0` em todos os casos.
+- Screenshot visual: cream/vídeo encostando em ambas as bordas, sem faixa preta.
+- Conferir que não aparece scroll horizontal na página (`document.documentElement.scrollWidth === window.innerWidth`).
