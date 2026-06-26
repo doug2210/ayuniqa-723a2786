@@ -20,7 +20,15 @@ export type DbGame = {
   screenshots: string[];
   assets: GameAsset[];
   position: number;
+  status: GameStatus;
 };
+
+export const GAME_STATUSES = ["released", "upcoming"] as const;
+export type GameStatus = (typeof GAME_STATUSES)[number];
+
+function normalizeStatus(v: unknown): GameStatus {
+  return v === "upcoming" ? "upcoming" : "released";
+}
 
 function fromRow(row: Record<string, unknown>): DbGame {
   return {
@@ -41,6 +49,7 @@ function fromRow(row: Record<string, unknown>): DbGame {
     screenshots: Array.isArray(row.screenshots) ? (row.screenshots as string[]) : [],
     assets: Array.isArray(row.assets) ? (row.assets as GameAsset[]) : [],
     position: Number(row.position ?? 0) || 0,
+    status: normalizeStatus(row.status),
   };
 }
 
@@ -94,6 +103,7 @@ function toRow(g: GameInput, includeId = true): Record<string, unknown> {
     screenshots: g.screenshots,
     assets: g.assets,
     position: g.position,
+    status: normalizeStatus(g.status),
   };
 }
 
@@ -162,5 +172,6 @@ export function emptyGame(): GameInput {
     screenshots: [],
     assets: [],
     position: 999,
+    status: "released",
   };
 }
