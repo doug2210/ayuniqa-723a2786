@@ -29,6 +29,7 @@ function Index() {
     <SiteLayout>
       <Hero />
       <Strengths />
+      <UpcomingGames />
       <FeaturedGames />
       <Services />
       <CTA />
@@ -124,6 +125,7 @@ function Strengths() {
 
 function FeaturedGames() {
   const { data: games = [] } = useGames();
+  const released = games.filter((g) => g.status !== "upcoming");
   return (
     <section className="bg-secondary/40 py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -139,7 +141,7 @@ function FeaturedGames() {
           </div>
         </ScrollReveal>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {games.slice(0, 4).map((g, i) => (
+          {released.slice(0, 4).map((g, i) => (
             <ScrollReveal key={g.slug} animation="fade-up" delay={i * 150}>
               <Link
                 to="/games/$slug"
@@ -150,6 +152,51 @@ function FeaturedGames() {
                   <img src={g.cover_url} alt={g.title} loading="lazy" width={1024} height={1024} className="h-full w-full object-cover transition-smooth group-hover:scale-105" />
                   <span className="absolute right-3 top-3 rounded-full bg-[color:var(--brand-yellow)] px-2 py-0.5 text-[10px] font-bold text-[color:var(--brand-grey)]">
                     {g.volatility}
+                  </span>
+                </div>
+                <div className="p-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold">{g.title}</h3>
+                    <span className="text-xs text-muted-foreground">RTP {g.rtp}%</span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">{g.tagline}</p>
+                </div>
+              </Link>
+            </ScrollReveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function UpcomingGames() {
+  const { data: games = [] } = useGames();
+  const upcoming = games.filter((g) => g.status === "upcoming");
+  if (upcoming.length === 0) return null;
+  return (
+    <section className="py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <ScrollReveal animation="fade-up">
+          <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="text-4xl font-black tracking-tight sm:text-5xl">Upcoming games</h2>
+              <p className="mt-2 text-muted-foreground">Coming soon to the Ayuniqa lobby.</p>
+            </div>
+          </div>
+        </ScrollReveal>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {upcoming.slice(0, 4).map((g, i) => (
+            <ScrollReveal key={g.slug} animation="fade-up" delay={i * 150}>
+              <Link
+                to="/games/$slug"
+                params={{ slug: g.slug }}
+                className="group block overflow-hidden rounded-2xl border border-border bg-card shadow-card transition-smooth hover:-translate-y-1 hover:shadow-glow"
+              >
+                <div className="relative aspect-square overflow-hidden bg-gradient-warm">
+                  <img src={g.cover_url} alt={g.title} loading="lazy" width={1024} height={1024} className="h-full w-full object-cover transition-smooth group-hover:scale-105" />
+                  <span className="absolute right-3 top-3 rounded-full bg-gradient-brand px-2 py-0.5 text-[10px] font-bold text-white shadow-glow">
+                    Soon
                   </span>
                 </div>
                 <div className="p-4">

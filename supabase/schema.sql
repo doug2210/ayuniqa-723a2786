@@ -259,9 +259,19 @@ create table if not exists public.games (
   screenshots   jsonb not null default '[]'::jsonb,
   assets        jsonb not null default '[]'::jsonb,
   position      int  not null default 0,
+  status        text not null default 'released',
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now()
 );
+
+alter table public.games
+  add column if not exists status text not null default 'released';
+
+alter table public.games
+  drop constraint if exists games_status_check;
+alter table public.games
+  add constraint games_status_check
+  check (status in ('released', 'upcoming'));
 
 grant select on public.games to anon, authenticated;
 grant insert, update, delete on public.games to authenticated;

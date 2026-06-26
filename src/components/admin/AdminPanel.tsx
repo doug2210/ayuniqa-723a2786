@@ -32,6 +32,8 @@ import {
   emptyGame,
   GAME_CATEGORIES,
   GAME_VOLATILITIES,
+  GAME_STATUSES,
+  type GameStatus,
   type GameInput,
   type DbGame,
 } from "@/lib/games-api";
@@ -931,6 +933,7 @@ function GamesEditor() {
   const DRAFT_KEY = "ayuniqa.admin.gameDraft.v1";
   const [editing, setEditing] = useState<GameInput | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [tab, setTab] = useState<GameStatus>("released");
 
   // Restore in-progress draft after accidental reloads / remounts.
   useEffect(() => {
@@ -974,7 +977,7 @@ function GamesEditor() {
   };
   const startNew = () => {
     setSaveError(null);
-    setEditing(emptyGame());
+    setEditing({ ...emptyGame(), status: tab });
   };
 
   if (editing) {
@@ -1001,14 +1004,23 @@ function GamesEditor() {
     );
   }
 
+  const visibleGames = games.filter((g) => (g.status ?? "released") === tab);
+
   return (
     <div className="space-y-4">
+      <Tabs value={tab} onValueChange={(v) => setTab(v as GameStatus)}>
+        <TabsList className="grid w-full grid-cols-2 sm:w-auto sm:inline-grid">
+          <TabsTrigger value="released">Released</TabsTrigger>
+          <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       <div className="flex flex-wrap items-start justify-between gap-3">
         <p className="text-sm text-muted-foreground max-w-xl">
           Clique em <strong>Editar</strong> para alterar os campos de um jogo, ou no ícone de lixeira para excluí-lo. As mudanças vão ao ar imediatamente no site público.
         </p>
         <Button size="sm" onClick={startNew}>
-          <Plus className="!size-3.5" /> Add game
+          <Plus className="!size-3.5" /> Add {tab === "upcoming" ? "upcoming" : "game"}
         </Button>
       </div>
 
@@ -1018,14 +1030,16 @@ function GamesEditor() {
         </p>
       )}
 
-      {!isLoading && games.length === 0 && (
+      {!isLoading && visibleGames.length === 0 && (
         <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          No games yet. Click "Add game" to create the first one.
+          {tab === "upcoming"
+            ? "Nenhum jogo em Upcoming. Clique em \"Add upcoming\" para adicionar o primeiro."
+            : "No games yet. Click \"Add game\" to create the first one."}
         </p>
       )}
 
       <div className="grid gap-3">
-        {games.map((g) => (
+        {visibleGames.map((g) => (
           <Card key={g.slug} className="flex flex-wrap items-center gap-4 p-4">
             <div className="h-16 w-16 overflow-hidden rounded-lg bg-muted">
               {g.cover_url && (
@@ -1135,6 +1149,19 @@ function GameForm({
           </Select>
         </div>
         <div>
+          <Label>Status</Label>
+          <Select value={value.status ?? "released"} onValueChange={(v) => set("status", v as GameStatus)}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {GAME_STATUSES.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s === "upcoming" ? "Upcoming" : "Released"}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
           <Label>Volatility</Label>
           <Select value={value.volatility} onValueChange={(v) => set("volatility", v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
@@ -1153,6 +1180,13 @@ function GameForm({
             onChange={(e) => set("rtp", parseFloat(e.target.value) || 0)}
           />
         </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <Label>Reels (e.g. 5x3)</Label>
+          <Input value={value.reels} onChange={(e) => set("reels", e.target.value)} />
+        </div>
         <div>
           <Label>Paylines</Label>
           <Input
@@ -1164,10 +1198,6 @@ function GameForm({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <Label>Reels (e.g. 5x3)</Label>
-          <Input value={value.reels} onChange={(e) => set("reels", e.target.value)} />
-        </div>
         <div>
           <Label>Display order (lower = first)</Label>
           <Input
