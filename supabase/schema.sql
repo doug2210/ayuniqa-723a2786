@@ -67,6 +67,30 @@ as $$
   )
 $$;
 
+-- Restrict the legacy has_role(uuid, role) RPC so it cannot be used by clients
+-- to enumerate which accounts hold the admin role. Only privileged roles may
+-- invoke it now; RLS policies continue to call it as the function owner.
+revoke execute on function public.has_role(uuid, public.app_role) from public, anon, authenticated;
+grant execute on function public.has_role(uuid, public.app_role) to service_role;
+
+-- Current-user-scoped role check exposed to clients. Does not accept a
+-- caller-supplied uuid, so it cannot be used to enumerate other users' roles.
+create or replace function public.current_user_has_role(_role public.app_role)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.user_roles
+    where user_id = auth.uid() and role = _role
+  )
+$$;
+
+revoke execute on function public.current_user_has_role(public.app_role) from public;
+grant execute on function public.current_user_has_role(public.app_role) to authenticated, service_role;
+
 -- 4) Trigger para criar profile + role 'user' ao registrar
 create or replace function public.handle_new_user()
 returns trigger
@@ -175,6 +199,31 @@ drop policy if exists "site_assets_admin_delete" on storage.objects;
 create policy "site_assets_admin_delete" on storage.objects
   for delete to authenticated
   using (bucket_id = 'site-assets' and public.has_role(auth.uid(), 'admin'));
+
+-- Storage bucket for per-game assets uploaded by admins (cover art, symbols, etc.).
+-- Public read so the marketing site can render the assets; writes restricted to admins.
+insert into storage.buckets (id, name, public)
+values ('game-assets', 'game-assets', true)
+on conflict (id) do nothing;
+
+drop policy if exists "game_assets_read" on storage.objects;
+create policy "game_assets_read" on storage.objects
+  for select to anon, authenticated using (bucket_id = 'game-assets');
+
+drop policy if exists "game_assets_admin_insert" on storage.objects;
+create policy "game_assets_admin_insert" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'game-assets' and public.has_role(auth.uid(), 'admin'));
+
+drop policy if exists "game_assets_admin_update" on storage.objects;
+create policy "game_assets_admin_update" on storage.objects
+  for update to authenticated
+  using (bucket_id = 'game-assets' and public.has_role(auth.uid(), 'admin'));
+
+drop policy if exists "game_assets_admin_delete" on storage.objects;
+create policy "game_assets_admin_delete" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'game-assets' and public.has_role(auth.uid(), 'admin'));
 
 -- =====================================================================
 -- COMO PROMOVER SEU USUÁRIO A ADMIN
