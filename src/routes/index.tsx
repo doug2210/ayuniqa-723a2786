@@ -41,7 +41,7 @@ function Hero() {
   const { config, loaded } = useSiteConfig();
   const h = config.hero;
   return (
-    <section className="relative isolate flex max-h-[60vh] min-h-[50vh] overflow-hidden" style={{ backgroundColor: h.backgroundColor }}>
+    <section className="relative isolate flex min-h-[50vh]" style={{ backgroundColor: h.backgroundColor }}>
       <div className="absolute inset-0 z-0">
         <HeroScrollVideo src={h.scrollVideoUrl} mode={h.scrollVideoMode} ready={loaded} />
       </div>
