@@ -371,6 +371,7 @@ function HeroEditor({
           backgroundColor={value.backgroundColor}
           videoUrl={value.scrollVideoUrl}
           videoMode={value.scrollVideoMode}
+          sideCropPct={value.scrollVideoSideCropPct ?? 0}
           fullHero={value}
           onChange={(patch) => onChange({ ...value, ...patch })}
         />
@@ -538,17 +539,20 @@ function HeroScrollEditor({
   backgroundColor,
   videoUrl,
   videoMode,
+  sideCropPct,
   fullHero,
   onChange,
 }: {
   backgroundColor: string;
   videoUrl: string | null;
   videoMode: "scroll" | "loop";
+  sideCropPct: number;
   fullHero: typeof DEFAULT_HERO;
   onChange: (patch: {
     backgroundColor?: string;
     scrollVideoUrl?: string | null;
     scrollVideoMode?: "scroll" | "loop";
+    scrollVideoSideCropPct?: number;
   }) => void;
 }) {
   const { setConfig } = useSiteConfig();
