@@ -32,6 +32,8 @@ import {
   emptyGame,
   GAME_CATEGORIES,
   GAME_VOLATILITIES,
+  GAME_STATUSES,
+  type GameStatus,
   type GameInput,
   type DbGame,
 } from "@/lib/games-api";
