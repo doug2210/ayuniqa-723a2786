@@ -169,7 +169,13 @@ export function HeroScrollVideo({
       loop={mode === "loop"}
       disablePictureInPicture
       className="block h-full w-full object-cover"
-      style={ready ? undefined : { visibility: "hidden" }}
+      style={
+        ready
+          ? scale !== 1
+            ? { transform: `scale(${scale})` }
+            : undefined
+          : { visibility: "hidden" }
+      }
     />
   );
 }
