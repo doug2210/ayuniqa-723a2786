@@ -1149,6 +1149,19 @@ function GameForm({
           </Select>
         </div>
         <div>
+          <Label>Status</Label>
+          <Select value={value.status ?? "released"} onValueChange={(v) => set("status", v as GameStatus)}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {GAME_STATUSES.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s === "upcoming" ? "Upcoming" : "Released"}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
           <Label>Volatility</Label>
           <Select value={value.volatility} onValueChange={(v) => set("volatility", v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
@@ -1167,6 +1180,13 @@ function GameForm({
             onChange={(e) => set("rtp", parseFloat(e.target.value) || 0)}
           />
         </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <Label>Reels (e.g. 5x3)</Label>
+          <Input value={value.reels} onChange={(e) => set("reels", e.target.value)} />
+        </div>
         <div>
           <Label>Paylines</Label>
           <Input
@@ -1178,10 +1198,6 @@ function GameForm({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <Label>Reels (e.g. 5x3)</Label>
-          <Input value={value.reels} onChange={(e) => set("reels", e.target.value)} />
-        </div>
         <div>
           <Label>Display order (lower = first)</Label>
           <Input
