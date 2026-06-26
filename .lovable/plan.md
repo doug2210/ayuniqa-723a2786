@@ -1,25 +1,35 @@
-## 1. Game cards: keep only the image/gif
+## Problema
 
-Remove the text block (title + RTP/tagline/volatility/reels) from card components. Keep just the cover image with the existing badge. Apply in:
+O vídeo do hero (Astronaut) tem barras pretas embutidas nas laterais do arquivo `.mp4`. A solução atual usa `transform: scale(1.8)`, que amplia o vídeo **uniformemente** — por isso ele aparece "muito zoomed/desproporcional" verticalmente, e dependendo da largura da tela ainda sobra borda à esquerda.
 
-- `src/routes/index.tsx` — `FeaturedGames` and `UpcomingGames` cards: drop the `<div className="p-4">…</div>` block; keep image + badge.
-- `src/routes/games.index.tsx` — both released grid and `Upcoming` grid cards: drop the lower text block; keep image + badge.
+A forma correta é recortar **somente** o eixo horizontal, mantendo a proporção do conteúdo intacta.
 
-The game detail page (`/games/$slug`) is untouched — titles still appear there.
+## Solução
 
-## 2. Hero: video as full-width background behind the title
+Trocar a prop `scale` por uma prop `sideCropPct` (percentual de barra preta a cortar em cada lado). O `<video>` passa a ser:
 
-Rework the `Hero` section in `src/routes/index.tsx`:
+- `width: 100% / (1 - 2 * sideCropPct/100)` → o vídeo fica mais largo que o container exatamente o suficiente para empurrar as barras pretas para fora.
+- `left: -sideCropPct%` → centraliza o conteúdo útil.
+- `height: 100%`, `object-fit: cover` → mantém a altura preenchendo a seção, sem zoom vertical extra.
+- O wrapper já tem `overflow-hidden`, então o excedente lateral (as barras) some.
 
-- Convert the two-column grid into a single full-width stage. The `<HeroScrollVideo>` becomes an absolutely positioned background spanning the entire section width (edge to edge of the viewport), behind the text.
-- Add a readability overlay (subtle dark/brand gradient) above the video and below the text so the headline, subtitle, CTAs, and stats stay legible.
-- Text content (badge, title, subtitle, CTAs, stats) is centered (or left-aligned within max-w container) on top of the video, with appropriate vertical padding to maintain hero height.
-- Update `src/components/site/HeroScrollVideo.tsx`: remove the `max-w-[560px]` cap and make the video fill its container (`w-full h-full object-cover`) so it can act as a full-bleed background.
+Sem `transform: scale`, sem distorção: o miolo do vídeo ocupa 100% da largura da tela em qualquer breakpoint, e a altura segue o `object-cover` natural.
 
-Scroll-driven playback logic stays as-is (it still targets `video.closest("section")`).
+## Valor inicial e ajuste fino
 
-## Technical notes
+Como cada vídeo enviado pelo admin pode ter barras de tamanhos diferentes, vou:
 
-- No data, schema, or admin changes.
-- No new dependencies.
-- `HeroStage` / `AstronautMascot` are not used by the current hero; left untouched.
+1. Aplicar um padrão de **18%** de corte lateral quando a URL contém `Astronaut-hero` (estimativa baseada em vídeos quadrados 624×624 desse tipo de asset; refinamos visualmente).
+2. Adicionar um campo no **AdminPanel** ("Corte lateral do vídeo (%)") com slider 0–30 para o usuário ajustar ao vivo o quanto cortar de cada lado, persistido em `site-config` como `hero.scrollVideoSideCropPct`.
+
+## Arquivos a alterar
+
+- `src/components/site/HeroScrollVideo.tsx` — remover prop `scale`, adicionar `sideCropPct`; aplicar via `style.width` + `style.left` (com `position: absolute`) em vez de `transform: scale`.
+- `src/routes/index.tsx` — passar `sideCropPct={h.scrollVideoSideCropPct ?? (URL contém Astronaut ? 18 : 0)}`.
+- `src/lib/site-config.ts` — adicionar campo `scrollVideoSideCropPct: number` ao tipo/default/parser do hero.
+- `src/components/admin/AdminPanel.tsx` — adicionar slider 0–30% para ajustar.
+
+## Verificação
+
+- Build passa.
+- Playwright em 1280×1800 e 375×800: nenhuma borda preta visível à esquerda/direita, vídeo ocupa 100% da largura, altura sem zoom exagerado (proporção natural do conteúdo).

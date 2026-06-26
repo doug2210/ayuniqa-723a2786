@@ -371,6 +371,7 @@ function HeroEditor({
           backgroundColor={value.backgroundColor}
           videoUrl={value.scrollVideoUrl}
           videoMode={value.scrollVideoMode}
+          sideCropPct={value.scrollVideoSideCropPct ?? 0}
           fullHero={value}
           onChange={(patch) => onChange({ ...value, ...patch })}
         />
@@ -538,17 +539,20 @@ function HeroScrollEditor({
   backgroundColor,
   videoUrl,
   videoMode,
+  sideCropPct,
   fullHero,
   onChange,
 }: {
   backgroundColor: string;
   videoUrl: string | null;
   videoMode: "scroll" | "loop";
+  sideCropPct: number;
   fullHero: typeof DEFAULT_HERO;
   onChange: (patch: {
     backgroundColor?: string;
     scrollVideoUrl?: string | null;
     scrollVideoMode?: "scroll" | "loop";
+    scrollVideoSideCropPct?: number;
   }) => void;
 }) {
   const { setConfig } = useSiteConfig();
@@ -647,6 +651,27 @@ function HeroScrollEditor({
         <p className="text-xs text-muted-foreground">
           Deixe vazio para usar o vídeo padrão embutido.
         </p>
+        <div className="space-y-2 border-t border-border pt-4">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+              Corte lateral do vídeo
+            </Label>
+            <span className="font-mono text-xs text-muted-foreground">{sideCropPct}%</span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={30}
+            step={1}
+            value={sideCropPct}
+            onChange={(e) => onChange({ scrollVideoSideCropPct: Number(e.target.value) })}
+            className="w-full"
+          />
+          <p className="text-xs text-muted-foreground">
+            Use para esconder barras pretas embutidas nas laterais do arquivo. O conteúdo central é
+            ampliado horizontalmente até preencher toda a largura, sem distorcer a proporção.
+          </p>
+        </div>
         <div className="flex items-center gap-3 border-t border-border pt-4">
           <Button onClick={handleSave} size="sm">
             {saved ? (

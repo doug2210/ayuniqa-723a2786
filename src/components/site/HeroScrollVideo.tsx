@@ -5,8 +5,8 @@ export function HeroScrollVideo({
   src,
   mode = "scroll",
   ready = true,
-  scale = 1,
-}: { src?: string | null; mode?: "scroll" | "loop"; ready?: boolean; scale?: number } = {}) {
+  sideCropPct = 0,
+}: { src?: string | null; mode?: "scroll" | "loop"; ready?: boolean; sideCropPct?: number } = {}) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -158,6 +158,13 @@ export function HeroScrollVideo({
     };
   }, [src, mode, ready]);
 
+  const crop = Math.max(0, Math.min(45, sideCropPct));
+  const widthPct = 100 / (1 - (2 * crop) / 100);
+  const leftPct = -crop * (widthPct / 100);
+  const cropStyle: React.CSSProperties =
+    crop > 0
+      ? { position: "absolute", top: 0, height: "100%", width: `${widthPct}%`, left: `${leftPct}%` }
+      : {};
   return (
     <video
       ref={videoRef}
@@ -171,8 +178,8 @@ export function HeroScrollVideo({
       className="block h-full w-full object-cover"
       style={
         ready
-          ? scale !== 1
-            ? { transform: `scale(${scale})` }
+          ? crop > 0
+            ? cropStyle
             : undefined
           : { visibility: "hidden" }
       }

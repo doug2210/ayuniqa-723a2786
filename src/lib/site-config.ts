@@ -136,6 +136,8 @@ export type HeroConfig = {
   scrollVideoUrl: string | null;
   /** Playback mode for the hero video: scrubbed by scroll, or auto-looping. */
   scrollVideoMode: "scroll" | "loop";
+  /** Percentage of horizontal black bars to crop from each side of the hero video (0–45). */
+  scrollVideoSideCropPct?: number;
 };
 
 export type ContactConfig = {
@@ -200,6 +202,7 @@ export const DEFAULT_HERO: HeroConfig = {
   backgroundColor: "#F7F3E6",
   scrollVideoUrl: null,
   scrollVideoMode: "scroll",
+  scrollVideoSideCropPct: 0,
 };
 
 export const DEFAULT_CONTACT: ContactConfig = {
@@ -290,6 +293,10 @@ export function mergeConfig(stored: unknown): SiteConfig {
           : null,
       scrollVideoMode:
         heroIn.scrollVideoMode === "loop" ? "loop" : "scroll",
+      scrollVideoSideCropPct:
+        typeof heroIn.scrollVideoSideCropPct === "number"
+          ? Math.max(0, Math.min(45, heroIn.scrollVideoSideCropPct))
+          : DEFAULT_HERO.scrollVideoSideCropPct,
     },
     floating: {
       items: Array.isArray(s.floating?.items) && s.floating!.items.length > 0

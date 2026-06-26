@@ -47,7 +47,10 @@ function Hero() {
           src={h.scrollVideoUrl}
           mode={h.scrollVideoMode}
           ready={loaded}
-          scale={h.scrollVideoUrl?.includes("Astronaut-hero") ? 1.8 : 1}
+          sideCropPct={
+            h.scrollVideoSideCropPct ??
+            (h.scrollVideoUrl?.includes("Astronaut-hero") ? 18 : 0)
+          }
         />
       </div>
       <div className="relative z-20 mx-auto flex h-full w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
