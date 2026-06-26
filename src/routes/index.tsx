@@ -42,8 +42,13 @@ function Hero() {
   const h = config.hero;
   return (
     <section className="relative isolate flex min-h-[50vh]" style={{ backgroundColor: h.backgroundColor }}>
-      <div className="absolute inset-0 z-0">
-        <HeroScrollVideo src={h.scrollVideoUrl} mode={h.scrollVideoMode} ready={loaded} />
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <HeroScrollVideo
+          src={h.scrollVideoUrl}
+          mode={h.scrollVideoMode}
+          ready={loaded}
+          scale={h.scrollVideoUrl?.includes("Astronaut-hero") ? 1.8 : 1}
+        />
       </div>
       <div className="relative z-20 mx-auto flex h-full w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
         <div className="relative flex w-full flex-col justify-center py-12 lg:w-1/2 lg:py-16">
