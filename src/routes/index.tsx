@@ -41,34 +41,37 @@ function Hero() {
   const { config, loaded } = useSiteConfig();
   const h = config.hero;
   return (
-    <section className="relative isolate flex max-h-[60vh] min-h-[50vh] flex-col justify-center overflow-hidden" style={{ backgroundColor: h.backgroundColor }}>
+    <section className="relative isolate flex max-h-[60vh] min-h-[50vh] overflow-hidden" style={{ backgroundColor: h.backgroundColor }}>
       <div className="absolute inset-0 z-0">
         <HeroScrollVideo src={h.scrollVideoUrl} mode={h.scrollVideoMode} ready={loaded} />
       </div>
-      <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-[#FDFBF7]/85 via-[#FDFBF7]/55 to-[#FDFBF7]/85" />
-      <div className="relative z-20 mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-        <div className="animate-fade-up max-w-3xl">
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-foreground/80 shadow-card">
-            <Sparkles className="animate-wiggle text-[color:var(--brand-orange)]" /> {h.badge}
-          </span>
-          <h1 className="mt-5 text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-            {h.titlePrefix}<AuroraText>{h.titleAccent}</AuroraText>{h.titleSuffix}
-          </h1>
-          <p className="mt-5 max-w-xl text-lg text-muted-foreground">{h.subtitle}</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button asChild size="lg" variant="shimmer" onClick={confettiFromEvent}>
-              <a href={h.primaryCta.href}>{h.primaryCta.label} <ArrowRight /></a>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <a href={h.secondaryCta.href}>{h.secondaryCta.label}</a>
-            </Button>
-          </div>
-          <div className="relative z-30 mt-10 grid max-w-2xl grid-cols-3 gap-3 sm:gap-7">
-            {h.stats.filter((s) => s.enabled).map((s, i) => (
-              <Stat key={i} value={s.value} suffix={s.suffix} decimals={s.decimals} label={s.label} />
-            ))}
+      <div className="relative z-20 flex h-full w-full items-center">
+        <div className="relative flex w-full flex-col justify-center px-4 py-12 sm:px-6 lg:w-1/2 lg:px-8 lg:py-16">
+          <div className="pointer-events-none absolute inset-0 z-[-1] bg-gradient-to-r from-[#FDFBF7]/95 via-[#FDFBF7]/85 to-transparent" />
+          <div className="animate-fade-up max-w-xl">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-foreground/80 shadow-card">
+              <Sparkles className="animate-wiggle text-[color:var(--brand-orange)]" /> {h.badge}
+            </span>
+            <h1 className="mt-5 text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
+              {h.titlePrefix}<AuroraText>{h.titleAccent}</AuroraText>{h.titleSuffix}
+            </h1>
+            <p className="mt-5 max-w-xl text-lg text-muted-foreground">{h.subtitle}</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button asChild size="lg" variant="shimmer" onClick={confettiFromEvent}>
+                <a href={h.primaryCta.href}>{h.primaryCta.label} <ArrowRight /></a>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <a href={h.secondaryCta.href}>{h.secondaryCta.label}</a>
+              </Button>
+            </div>
+            <div className="relative z-30 mt-10 grid max-w-2xl grid-cols-3 gap-3 sm:gap-7">
+              {h.stats.filter((s) => s.enabled).map((s, i) => (
+                <Stat key={i} value={s.value} suffix={s.suffix} decimals={s.decimals} label={s.label} />
+              ))}
+            </div>
           </div>
         </div>
+        <div className="hidden lg:block lg:w-1/2" />
       </div>
     </section>
   );
