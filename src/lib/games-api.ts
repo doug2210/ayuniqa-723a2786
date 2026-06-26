@@ -2,6 +2,13 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { GameAsset } from "@/lib/games-data";
 
+export const GAME_STATUSES = ["released", "upcoming"] as const;
+export type GameStatus = (typeof GAME_STATUSES)[number];
+
+function normalizeStatus(v: unknown): GameStatus {
+  return v === "upcoming" ? "upcoming" : "released";
+}
+
 export type DbGame = {
   id: string;
   slug: string;
@@ -22,13 +29,6 @@ export type DbGame = {
   position: number;
   status: GameStatus;
 };
-
-export const GAME_STATUSES = ["released", "upcoming"] as const;
-export type GameStatus = (typeof GAME_STATUSES)[number];
-
-function normalizeStatus(v: unknown): GameStatus {
-  return v === "upcoming" ? "upcoming" : "released";
-}
 
 function fromRow(row: Record<string, unknown>): DbGame {
   return {
