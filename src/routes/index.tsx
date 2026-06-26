@@ -42,9 +42,12 @@ function Hero() {
   const h = config.hero;
   return (
     <section className="relative isolate overflow-hidden" style={{ backgroundColor: h.backgroundColor }}>
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-1/2 bg-gradient-to-b from-[#FDFBF7] to-transparent lg:inset-y-0 lg:left-0 lg:right-auto lg:h-auto lg:w-[65%] lg:bg-gradient-to-r" />
-      <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-28">
-        <div className="relative z-20 animate-fade-up">
+      <div className="absolute inset-0 z-0">
+        <HeroScrollVideo src={h.scrollVideoUrl} mode={h.scrollVideoMode} ready={loaded} />
+      </div>
+      <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-[#FDFBF7]/85 via-[#FDFBF7]/55 to-[#FDFBF7]/85" />
+      <div className="relative z-20 mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-36">
+        <div className="animate-fade-up max-w-3xl">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-foreground/80 shadow-card">
             <Sparkles className="animate-wiggle text-[color:var(--brand-orange)]" /> {h.badge}
           </span>
@@ -65,9 +68,6 @@ function Hero() {
               <Stat key={i} value={s.value} suffix={s.suffix} decimals={s.decimals} label={s.label} />
             ))}
           </div>
-        </div>
-        <div className="relative z-0">
-          <HeroScrollVideo src={h.scrollVideoUrl} mode={h.scrollVideoMode} ready={loaded} />
         </div>
       </div>
     </section>
@@ -154,13 +154,6 @@ function FeaturedGames() {
                     {g.volatility}
                   </span>
                 </div>
-                <div className="p-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold">{g.title}</h3>
-                    <span className="text-xs text-muted-foreground">RTP {g.rtp}%</span>
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">{g.tagline}</p>
-                </div>
               </Link>
             </ScrollReveal>
           ))}
@@ -198,13 +191,6 @@ function UpcomingGames() {
                   <span className="absolute right-3 top-3 rounded-full bg-gradient-brand px-2 py-0.5 text-[10px] font-bold text-white shadow-glow">
                     Soon
                   </span>
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold">{g.title}</h3>
-                    <span className="text-xs text-muted-foreground">RTP {g.rtp}%</span>
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">{g.tagline}</p>
                 </div>
               </Link>
             </ScrollReveal>

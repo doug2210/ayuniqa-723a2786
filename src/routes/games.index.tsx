@@ -119,17 +119,6 @@ function GamesPage() {
                       {g.category}
                     </span>
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-bold">{g.title}</h3>
-                    <p className="mt-1 text-xs text-muted-foreground">{g.tagline}</p>
-                    <div className="mt-3 flex items-center gap-3 text-[11px] uppercase tracking-wide text-muted-foreground">
-                      <span>RTP {g.rtp}%</span>
-                      <span>·</span>
-                      <span>{g.volatility} vol</span>
-                      <span>·</span>
-                      <span>{g.reels}</span>
-                    </div>
-                  </div>
                 </Link>
                 </TiltCard>
               </ScrollReveal>
@@ -162,17 +151,6 @@ function GamesPage() {
                       <span className="absolute right-3 top-3 rounded-full bg-gradient-brand px-2 py-0.5 text-[10px] font-bold text-white shadow-glow">
                         Soon
                       </span>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-bold">{g.title}</h3>
-                      <p className="mt-1 text-xs text-muted-foreground">{g.tagline}</p>
-                      <div className="mt-3 flex items-center gap-3 text-[11px] uppercase tracking-wide text-muted-foreground">
-                        <span>RTP {g.rtp}%</span>
-                        <span>·</span>
-                        <span>{g.volatility} vol</span>
-                        <span>·</span>
-                        <span>{g.reels}</span>
-                      </div>
                     </div>
                   </Link>
                 </TiltCard>

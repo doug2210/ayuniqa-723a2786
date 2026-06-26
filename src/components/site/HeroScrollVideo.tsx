@@ -167,8 +167,8 @@ export function HeroScrollVideo({
       autoPlay={mode === "loop"}
       loop={mode === "loop"}
       disablePictureInPicture
-      className="mx-auto block h-auto w-full max-w-[560px]"
-      style={ready ? undefined : { visibility: "hidden", aspectRatio: "16 / 9" }}
+      className="block h-full w-full object-cover"
+      style={ready ? undefined : { visibility: "hidden" }}
     />
   );
 }
