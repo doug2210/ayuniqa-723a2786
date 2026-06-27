@@ -1,42 +1,42 @@
-## Objetivo
-Permitir que o admin altere a logo do site (header e footer) através do painel `/admin`, com upload de imagem persistido no Lovable Cloud.
+## Problema
+O `vite.config.ts` está com `base: "/ayuniqa/"` fixo. Isso é necessário para o GitHub Pages (que serve em `doug2210.github.io/ayuniqa/`), mas quebra:
+- o **preview do Lovable** (`id-preview--*.lovable.app`)
+- o **site publicado** (`ayuniqa.lovable.app`)
 
-## Como vai funcionar (para o usuário)
-1. No painel admin, uma nova aba/seção **"Identidade visual"** mostrará a logo atual.
-2. O admin clica em **"Trocar logo"**, escolhe uma imagem (PNG/JPG/SVG/WebP até 2 MB) e confirma.
-3. A nova logo aparece imediatamente no menu (Header) e no rodapé (Footer) em todas as páginas, para todos os visitantes.
-4. Se nunca foi trocada, mostra a logo padrão atual (`ayuniqa-logo.png`).
-5. Botão **"Restaurar padrão"** volta para a logo original.
+Ambos servem na raiz `/`, mas o build com `base=/ayuniqa/` gera HTML apontando para `/ayuniqa/assets/styles-xxx.css`, que não existe nesses domínios → CSS 404 → página sem estilo (exatamente o que aparece no print).
 
-## Detalhes técnicos
+## Solução
+Tornar o `base` **condicional via variável de ambiente**, só ativando o prefixo `/ayuniqa/` quando o workflow do GitHub Pages estiver buildando.
 
-**Backend (Lovable Cloud)**
-- Bucket de Storage público `branding` para guardar arquivos de logo.
-- Tabela `public.site_settings` (singleton, `id = 'default'`) com coluna `logo_url text`.
-  - GRANTs: `SELECT` para `anon` e `authenticated`; `UPDATE` apenas para admins.
-  - RLS: leitura pública; escrita restrita via `has_role(auth.uid(), 'admin')`.
-- Migration cria registro inicial com `logo_url = null`.
+### Mudança 1 — `vite.config.ts`
+```ts
+const base = process.env.GITHUB_PAGES === "true" ? "/ayuniqa/" : "/";
 
-**Frontend**
-- Novo hook `useSiteSettings()` (TanStack Query) que lê `site_settings` via Supabase client publishable.
-- `Header.tsx` e `Footer.tsx` usam `settings.logo_url ?? logoAsset.url` (fallback para asset atual).
-- Nova seção no `AdminPanel.tsx`:
-  - Preview da logo atual.
-  - Input `<input type="file">` + botão "Enviar".
-  - Upload vai para `branding/logo-{timestamp}.{ext}`, pega `publicUrl`, faz `UPDATE` em `site_settings`.
-  - Botão "Restaurar padrão" seta `logo_url = null`.
-  - Após salvar, invalida a query para refletir nas demais páginas.
+export default defineConfig({
+  tanstackStart: { server: { entry: "server" } },
+  nitro: { preset: "static" },
+  vite: { base },
+});
+```
 
-**Validações**
-- Tipo MIME permitido: `image/png`, `image/jpeg`, `image/webp`, `image/svg+xml`.
-- Tamanho máximo 2 MB (checado no client antes do upload).
+### Mudança 2 — `.github/workflows/deploy.yml`
+Adicionar `GITHUB_PAGES: "true"` no `env:` do step de build:
+```yaml
+- name: Build
+  run: bun run build
+  env:
+    GITHUB_PAGES: "true"
+    VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+    VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+```
+
+## Resultado
+- **Preview Lovable** e **ayuniqa.lovable.app**: voltam a funcionar normalmente (base = `/`).
+- **GitHub Pages** (`doug2210.github.io/ayuniqa/`): continua funcionando, porque o workflow seta a env var antes do build.
 
 ## Arquivos afetados
-- `supabase/migrations/<novo>.sql` — tabela, RLS, bucket.
-- `src/hooks/useSiteSettings.ts` (novo).
-- `src/components/site/Header.tsx`, `src/components/site/Footer.tsx` — usar hook com fallback.
-- `src/components/admin/AdminPanel.tsx` — nova seção "Identidade visual".
+- `vite.config.ts`
+- `.github/workflows/deploy.yml`
 
 ## Fora do escopo
-- Trocar favicon, OG image, ou logo por tema (claro/escuro).
-- Histórico/versionamento de logos antigas.
+- Nenhuma mudança em código de UI, rotas ou backend.

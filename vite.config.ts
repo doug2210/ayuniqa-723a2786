@@ -6,6 +6,10 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
+// Only prefix with /ayuniqa/ when building for GitHub Pages.
+// Lovable preview and ayuniqa.lovable.app serve at the root.
+const base = process.env.GITHUB_PAGES === "true" ? "/ayuniqa/" : "/";
+
 export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
@@ -16,6 +20,6 @@ export default defineConfig({
     preset: "static",
   },
   vite: {
-    base: "/ayuniqa/",
+    base,
   },
 });
