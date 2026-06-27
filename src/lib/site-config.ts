@@ -177,6 +177,15 @@ export type FloatingConfig = {
   density: number;
 };
 
+export type BrandingConfig = {
+  /** Custom logo URL used in the header and footer. Null = use default asset. */
+  logoUrl: string | null;
+};
+
+export const DEFAULT_BRANDING: BrandingConfig = {
+  logoUrl: null,
+};
+
 export type SiteConfig = {
   version: 1;
   hero: HeroConfig;
@@ -184,6 +193,7 @@ export type SiteConfig = {
   contact: ContactConfig;
   about: AboutConfig;
   social: SocialLink[];
+  branding: BrandingConfig;
 };
 
 export const DEFAULT_HERO: HeroConfig = {
@@ -241,6 +251,7 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
   contact: DEFAULT_CONTACT,
   about: DEFAULT_ABOUT,
   social: DEFAULT_SOCIAL,
+  branding: DEFAULT_BRANDING,
 };
 
 export const SITE_CONFIG_KEY = "ayuniqa.siteConfig.v1";
@@ -318,6 +329,14 @@ export function mergeConfig(stored: unknown): SiteConfig {
           : DEFAULT_ABOUT.paragraphs,
     },
     social: Array.isArray(s.social) ? s.social : DEFAULT_SOCIAL,
+    branding: {
+      ...DEFAULT_BRANDING,
+      ...(s.branding ?? {}),
+      logoUrl:
+        typeof s.branding?.logoUrl === "string" && s.branding.logoUrl.trim()
+          ? s.branding.logoUrl
+          : null,
+    },
   };
 }
 

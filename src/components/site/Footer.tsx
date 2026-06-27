@@ -7,12 +7,13 @@ import { SocialIcon, type SocialPlatform } from "@/components/site/SocialIcon";
 
 export function Footer() {
   const { config } = useSiteConfig();
+  const logoUrl = config.branding?.logoUrl ?? logoAsset.url;
   return (
     <footer className="relative mt-24 overflow-hidden border-t border-border bg-secondary/40">
       <BorderBeam size={260} duration={12} />
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-4 lg:px-8">
         <div>
-          <img src={logoAsset.url} alt="Ayuniqa" className="h-9 w-auto" />
+          <img src={logoUrl} alt="Ayuniqa" className="h-9 w-auto" />
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
             Premium slot games engineered for operators worldwide.
           </p>

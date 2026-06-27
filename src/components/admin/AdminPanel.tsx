@@ -16,6 +16,7 @@ import {
   Share2,
   Save,
   Check,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,7 @@ import {
   type AboutStat,
   type SocialLink,
   type SocialPlatform,
+  type BrandingConfig,
 } from "@/lib/site-config";
 import { DEFAULT_FLOATING_ITEMS, type FloatingItem } from "@/lib/site-config";
 import { ImageField } from "./ImageField";
@@ -147,7 +149,8 @@ export function AdminPanel() {
       </header>
 
       <Tabs defaultValue="floating">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-7">
+          <TabsTrigger value="brand"><ImageIcon className="!size-3.5" /> Brand</TabsTrigger>
           <TabsTrigger value="floating"><Sparkles className="!size-3.5" /> Symbols</TabsTrigger>
           <TabsTrigger value="hero"><Settings2 className="!size-3.5" /> Hero</TabsTrigger>
           <TabsTrigger value="games"><Gamepad2 className="!size-3.5" /> Games</TabsTrigger>
@@ -155,6 +158,13 @@ export function AdminPanel() {
           <TabsTrigger value="contact"><MessageSquare className="!size-3.5" /> Contact</TabsTrigger>
           <TabsTrigger value="social"><Share2 className="!size-3.5" /> Social</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="brand" className="mt-6">
+          <BrandEditor
+            value={config.branding}
+            onChange={(next) => setConfig((c) => ({ ...c, branding: next }))}
+          />
+        </TabsContent>
 
         <TabsContent value="floating" className="mt-6">
           <FloatingEditor
@@ -1646,5 +1656,39 @@ function SocialEditor({
         </Card>
       ))}
     </div>
+  );
+}
+
+/* ---------- Brand editor (logo) ---------- */
+
+function BrandEditor({
+  value,
+  onChange,
+}: {
+  value: BrandingConfig;
+  onChange: (next: BrandingConfig) => void;
+}) {
+  return (
+    <Card className="space-y-4 p-5">
+      <div>
+        <h3 className="font-bold">Site logo</h3>
+        <p className="text-xs text-muted-foreground">
+          Used in the top menu and footer across every page. Recommended: PNG or SVG with transparent background, height ≥ 72px.
+        </p>
+      </div>
+      <ImageField
+        label="Custom logo (leave empty to use the default Ayuniqa logo)"
+        value={value.logoUrl}
+        onChange={(v) => onChange({ ...value, logoUrl: v })}
+        placeholder="https://… or upload a .png / .svg"
+        accept="image/png,image/svg+xml,image/webp,image/jpeg"
+        uploadLabel="Upload logo"
+      />
+      {value.logoUrl && (
+        <Button variant="ghost" size="sm" onClick={() => onChange({ ...value, logoUrl: null })}>
+          <RotateCcw className="!size-3.5" /> Restore default logo
+        </Button>
+      )}
+    </Card>
   );
 }

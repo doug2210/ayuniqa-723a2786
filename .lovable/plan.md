@@ -1,42 +1,42 @@
-Your project is a TanStack Start app with SSR (server-side rendering) backed by Nitro + Cloudflare. GitHub Pages is a **static-only** host — it does not run a Node/Worker server, so we must switch the build to **Static Site Generation (SSG)** and then wire up a GitHub Actions workflow that builds and publishes the static files.
+## Objetivo
+Permitir que o admin altere a logo do site (header e footer) através do painel `/admin`, com upload de imagem persistido no Lovable Cloud.
 
-### What we will do
+## Como vai funcionar (para o usuário)
+1. No painel admin, uma nova aba/seção **"Identidade visual"** mostrará a logo atual.
+2. O admin clica em **"Trocar logo"**, escolhe uma imagem (PNG/JPG/SVG/WebP até 2 MB) e confirma.
+3. A nova logo aparece imediatamente no menu (Header) e no rodapé (Footer) em todas as páginas, para todos os visitantes.
+4. Se nunca foi trocada, mostra a logo padrão atual (`ayuniqa-logo.png`).
+5. Botão **"Restaurar padrão"** volta para a logo original.
 
-1. **Switch the Nitro preset to `static`** in `vite.config.ts` so `vite build` emits static HTML/JS/CSS instead of a server bundle.
-2. **Configure the base path** in Vite to `/ayuniqa/` because GitHub Pages serves user/organization projects under a sub-path.
-3. **Handle client-side routing for the static export** by ensuring all routes are pre-rendered (TanStack Router can generate static HTML for each route). The dynamic route `/games/$slug` needs every game slug known at build time, or it will fall back to a generic 404 on direct access.
-4. **Create a GitHub Actions workflow** (`.github/workflows/deploy.yml`) that:
-   - Checks out the repo
-   - Installs dependencies with `bun install`
-   - Runs `vite build`
-   - Uploads the `dist/` (or `dist/public/`) folder to GitHub Pages via `actions/deploy-pages`
-5. **Enable GitHub Pages** in the repository settings to serve from the GitHub Actions source.
+## Detalhes técnicos
 
-### Important considerations
-- **Supabase calls** (games list, game detail) are already client-side via `@supabase/supabase-js`, so they will continue to work after the static export.
-- **Dynamic routes** (`/games/:slug`) will only work on direct page loads if we pre-render each slug at build time. If the game list changes after deploy, new slugs won’t have their own HTML file. We can mitigate this by either (a) fetching all slugs during the build and adding them to the prerender list, or (b) relying on client-side routing + a catch-all `index.html` fallback (some static hosts support this via `_redirects` or `404.html`, but GitHub Pages does not natively support SPA fallbacks). If needed, we can generate a `404.html` that mirrors `index.html` so client-side routing works for unknown paths.
-- The repo name `ayuniqa` matches the expected base path `/ayuniqa/`.
+**Backend (Lovable Cloud)**
+- Bucket de Storage público `branding` para guardar arquivos de logo.
+- Tabela `public.site_settings` (singleton, `id = 'default'`) com coluna `logo_url text`.
+  - GRANTs: `SELECT` para `anon` e `authenticated`; `UPDATE` apenas para admins.
+  - RLS: leitura pública; escrita restrita via `has_role(auth.uid(), 'admin')`.
+- Migration cria registro inicial com `logo_url = null`.
 
-### Steps in detail
+**Frontend**
+- Novo hook `useSiteSettings()` (TanStack Query) que lê `site_settings` via Supabase client publishable.
+- `Header.tsx` e `Footer.tsx` usam `settings.logo_url ?? logoAsset.url` (fallback para asset atual).
+- Nova seção no `AdminPanel.tsx`:
+  - Preview da logo atual.
+  - Input `<input type="file">` + botão "Enviar".
+  - Upload vai para `branding/logo-{timestamp}.{ext}`, pega `publicUrl`, faz `UPDATE` em `site_settings`.
+  - Botão "Restaurar padrão" seta `logo_url = null`.
+  - Após salvar, invalida a query para refletir nas demais páginas.
 
-1. Edit `vite.config.ts`:
-   - Add `nitro: { preset: 'static' }` inside the config object.
-   - Add `base: '/ayuniqa/'` to the Vite config.
+**Validações**
+- Tipo MIME permitido: `image/png`, `image/jpeg`, `image/webp`, `image/svg+xml`.
+- Tamanho máximo 2 MB (checado no client antes do upload).
 
-2. Edit `src/router.tsx` (if needed):
-   - Ensure the router supports static pre-rendering (TanStack Start + Nitro static preset usually handles this automatically for known routes).
+## Arquivos afetados
+- `supabase/migrations/<novo>.sql` — tabela, RLS, bucket.
+- `src/hooks/useSiteSettings.ts` (novo).
+- `src/components/site/Header.tsx`, `src/components/site/Footer.tsx` — usar hook com fallback.
+- `src/components/admin/AdminPanel.tsx` — nova seção "Identidade visual".
 
-3. Create `.github/workflows/deploy.yml`:
-   - Trigger on pushes to `main`.
-   - Use `actions/setup-node` (or a container with Bun).
-   - Run `bun install` and `bun run build`.
-   - Upload the static output directory as a Pages artifact.
-   - Deploy using `actions/deploy-pages`.
-
-4. Verify build output:
-   - Run a local build and inspect the output folder to confirm HTML files exist for `/`, `/about`, `/games`, `/contact`, `/services`, and each game slug.
-
-5. Repository settings:
-   - Go to Settings → Pages → Build and deployment → Source: GitHub Actions.
-
-After the workflow runs successfully, the site will be live at `https://doug2210.github.io/ayuniqa/`.
+## Fora do escopo
+- Trocar favicon, OG image, ou logo por tema (claro/escuro).
+- Histórico/versionamento de logos antigas.

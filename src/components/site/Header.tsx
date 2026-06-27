@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import logoAsset from "@/assets/ayuniqa-logo.png.asset.json";
+import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
 
 const links = [
   { to: "/", label: "Home" },
@@ -13,6 +14,8 @@ const links = [
 ] as const;
 
 export function Header() {
+  const { config } = useSiteConfig();
+  const logoUrl = config.branding?.logoUrl ?? logoAsset.url;
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
@@ -33,7 +36,7 @@ export function Header() {
       <div className={cn("mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8")}>
         <Link to="/" className="group flex items-center gap-2">
           <img
-            src={logoAsset.url}
+            src={logoUrl}
             alt="Ayuniqa"
             className="h-9 w-auto transition-transform duration-300 group-hover:scale-110"
           />
