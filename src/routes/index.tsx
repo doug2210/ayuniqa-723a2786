@@ -52,8 +52,10 @@ function Hero() {
     <div data-hero-root className="relative isolate w-full overflow-hidden" style={{ backgroundColor: h.backgroundColor }}>
       {/* Solid background for tablet/mobile; video only on desktop */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        <div className="block lg:hidden absolute inset-0" style={{ backgroundColor: "#e2d6ca" }} />
-        <div className="hidden lg:block absolute inset-0 overflow-hidden">
+        {/* Solid bege: shown only on portrait below lg */}
+        <div className="absolute inset-0 portrait:block landscape:hidden lg:hidden" style={{ backgroundColor: "#e2d6ca" }} />
+        {/* Video: shown on lg+ AND on landscape below lg */}
+        <div className="absolute inset-0 overflow-hidden hidden landscape:block lg:block">
           <HeroScrollVideo
             src={h.scrollVideoUrl}
             mode={h.scrollVideoMode}
@@ -66,12 +68,12 @@ function Hero() {
       <div className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-full max-w-[900px] bg-gradient-to-r from-[#FDFBF7] via-[#FDFBF7]/90 to-transparent" />
       <section className="relative z-10 flex min-h-[50vh]">
         <div className="relative z-20 mx-auto flex h-full w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
-          <div className="relative flex w-full flex-col justify-center py-12 lg:w-1/2 lg:py-16">
-            <div className="animate-fade-up max-w-2xl">
+          <div className="relative flex w-full flex-col justify-center py-12 landscape:w-1/2 lg:w-1/2 lg:py-16">
+            <div className="animate-fade-up max-w-2xl landscape:max-lg:max-w-md">
               <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-foreground/80 shadow-card">
                 <Sparkles className="animate-wiggle text-[color:var(--brand-orange)]" /> {h.badge}
               </span>
-              <h1 className="mt-5 text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
+              <h1 className="mt-5 text-5xl font-black leading-[1.05] tracking-tight landscape:max-lg:text-4xl sm:text-6xl landscape:max-lg:sm:text-4xl lg:text-7xl">
                 {h.titlePrefix}<AuroraText>{h.titleAccent}</AuroraText>{h.titleSuffix}
               </h1>
               <p className="mt-5 max-w-xl text-lg text-muted-foreground">{h.subtitle}</p>
