@@ -234,7 +234,7 @@ function Services() {
   ];
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-      <div className="grid gap-10 lg:grid-cols-2">
+      <div className="grid gap-10 overflow-hidden lg:grid-cols-2">
         <ScrollReveal animation="fade-right">
           <div>
             <h2 className="text-4xl font-black tracking-tight sm:text-5xl">

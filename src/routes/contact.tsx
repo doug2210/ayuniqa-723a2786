@@ -56,7 +56,7 @@ function Contact() {
 
   return (
     <SiteLayout>
-      <section className="mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8">
+      <section className="mx-auto grid max-w-7xl gap-12 overflow-hidden px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8">
         <ScrollReveal animation="fade-right">
           <div>
             <h1 className="text-5xl font-black tracking-tight sm:text-6xl">
