@@ -22,10 +22,10 @@ interface ScrollRevealProps {
 }
 
 const hiddenState: Record<AnimationType, string> = {
-  "fade-up": "opacity-0 translate-y-40 scale-75 blur-sm",
-  "fade-down": "opacity-0 -translate-y-40 scale-75 blur-sm",
-  "fade-left": "opacity-0 -translate-x-40 scale-75 blur-sm",
-  "fade-right": "opacity-0 translate-x-40 scale-75 blur-sm",
+  "fade-up": "opacity-0 max-sm:translate-y-12 sm:translate-y-40 scale-75 blur-sm",
+  "fade-down": "opacity-0 max-sm:-translate-y-12 sm:-translate-y-40 scale-75 blur-sm",
+  "fade-left": "opacity-0 max-sm:-translate-x-12 sm:-translate-x-40 scale-75 blur-sm",
+  "fade-right": "opacity-0 max-sm:translate-x-12 sm:translate-x-40 scale-75 blur-sm",
   "fade-in": "opacity-0 scale-90 blur-sm",
   "scale-in": "opacity-0 scale-75 blur-sm",
   "zoom-in": "opacity-0 scale-50 blur-md",
