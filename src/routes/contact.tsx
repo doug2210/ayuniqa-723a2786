@@ -107,11 +107,23 @@ function Contact() {
                   const { error: insertError } = await supabase
                     .from("contact_messages")
                     .insert(parsed.data);
-                  setBusy(false);
                   if (insertError) {
+                    setBusy(false);
                     setError("Submission failed, please try again.");
                     return;
                   }
+                  // Fire-and-acknowledge email notification
+                  try {
+                    const res = await fetch("/api/public/contact", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(parsed.data),
+                    });
+                    if (!res.ok) console.warn("Contact email send returned", res.status);
+                  } catch (err) {
+                    console.warn("Contact email send failed", err);
+                  }
+                  setBusy(false);
                   setSent(true);
                   fireConfetti();
                 }}
