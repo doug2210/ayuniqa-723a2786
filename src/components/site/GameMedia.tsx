@@ -78,7 +78,7 @@ export function PlayDemoButton({ url, title }: { url?: string | null; title: str
         <Play className="!size-4" /> Play demo
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-5xl border-border bg-card p-0">
+        <DialogContent hideCloseButton className="max-w-5xl border-border bg-card p-0">
           <DialogHeader className="flex flex-row items-center justify-between border-b border-border p-3">
             <DialogTitle>{title} — demo</DialogTitle>
             <Button variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Close">
