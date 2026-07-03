@@ -15,7 +15,7 @@ const contactSchema = z.object({
 });
 
 const FROM_ADDRESS = "Ayuniqa Contact <noreply@ayuniqa.com>";
-const TO_ADDRESSES = ["olga@ayuniqa.com", "aleks.v@ayuniqa.com"];
+const TO_ADDRESSES = ["olga@ayuniqa.com", "aleks.v@ayuniqa.com", "marketing@ayuniqa.com"];
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
 
 function escapeHtml(value: string): string {
