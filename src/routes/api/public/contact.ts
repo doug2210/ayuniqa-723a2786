@@ -126,6 +126,85 @@ ${message}
           subject,
           providerId,
         });
+
+        // Confirmation email to the sender (English)
+        const confirmSubject = "We've received your message — Ayuniqa";
+        const confirmHtml = `
+          <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
+            <h2 style="margin:0 0 16px">Thanks for reaching out, ${escapeHtml(name)}!</h2>
+            <p style="margin:0 0 12px;line-height:1.5">
+              We've received your message and a member of the Ayuniqa team will get back to you within one business day.
+            </p>
+            <p style="margin:0 0 12px;line-height:1.5">For your reference, here's a copy of what you sent:</p>
+            <div style="white-space:pre-wrap;padding:12px;background:#f6f4f0;border-radius:8px;border:1px solid #e7e2d8">${escapeHtml(message)}</div>
+            <p style="margin:24px 0 4px;line-height:1.5">Talk soon,<br/>The Ayuniqa Team</p>
+          </div>
+        `;
+        const confirmText = `Thanks for reaching out, ${name}!
+
+We've received your message and a member of the Ayuniqa team will get back to you within one business day.
+
+For your reference, here's a copy of what you sent:
+
+${message}
+
+Talk soon,
+The Ayuniqa Team
+`;
+
+        const confirmStartedAt = Date.now();
+        console.log("[contact] sending confirmation email", {
+          to: email,
+          from: FROM_ADDRESS,
+          subject: confirmSubject,
+        });
+        try {
+          const confirmResponse = await fetch(`${GATEWAY_URL}/emails`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${lovableApiKey}`,
+              "X-Connection-Api-Key": resendApiKey,
+            },
+            body: JSON.stringify({
+              from: FROM_ADDRESS,
+              to: [email],
+              reply_to: TO_ADDRESSES[0],
+              subject: confirmSubject,
+              html: confirmHtml,
+              text: confirmText,
+            }),
+          });
+          const confirmDurationMs = Date.now() - confirmStartedAt;
+          if (!confirmResponse.ok) {
+            const body = await confirmResponse.text();
+            console.error("[contact] confirmation send failed", {
+              status: confirmResponse.status,
+              durationMs: confirmDurationMs,
+              to: email,
+              subject: confirmSubject,
+              body,
+            });
+          } else {
+            let confirmProviderId: string | undefined;
+            try {
+              const data = (await confirmResponse.clone().json()) as { id?: string };
+              confirmProviderId = data?.id;
+            } catch {
+              // ignore
+            }
+            console.log("[contact] confirmation email sent", {
+              status: confirmResponse.status,
+              durationMs: confirmDurationMs,
+              to: email,
+              subject: confirmSubject,
+              providerId: confirmProviderId,
+            });
+          }
+        } catch (err) {
+          console.error("[contact] confirmation send threw", err);
+        }
+
         return Response.json({ ok: true });
       },
     },
