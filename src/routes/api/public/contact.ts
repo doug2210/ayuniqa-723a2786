@@ -75,57 +75,71 @@ ${message}
 `;
 
         const subject = `New contact — ${name}${company ? ` (${company})` : ""}`;
-        const startedAt = Date.now();
-        console.log("[contact] sending email", {
+        console.log("[contact] sending emails", {
           to: TO_ADDRESSES,
           from: FROM_ADDRESS,
           reply_to: email,
           subject,
         });
-        const response = await fetch(`${GATEWAY_URL}/emails`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${lovableApiKey}`,
-            "X-Connection-Api-Key": resendApiKey,
-          },
-          body: JSON.stringify({
-            from: FROM_ADDRESS,
-            to: TO_ADDRESSES,
-            reply_to: email,
-            subject,
-            html,
-            text,
-          }),
-        });
 
-        const durationMs = Date.now() - startedAt;
-        if (!response.ok) {
-          const body = await response.text();
-          console.error("[contact] resend send failed", {
-            status: response.status,
-            durationMs,
-            to: TO_ADDRESSES,
-            subject,
-            body,
-          });
+        const results = await Promise.all(
+          TO_ADDRESSES.map(async (recipient) => {
+            const startedAt = Date.now();
+            try {
+              const response = await fetch(`${GATEWAY_URL}/emails`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${lovableApiKey}`,
+                  "X-Connection-Api-Key": resendApiKey,
+                },
+                body: JSON.stringify({
+                  from: FROM_ADDRESS,
+                  to: [recipient],
+                  reply_to: email,
+                  subject,
+                  html,
+                  text,
+                }),
+              });
+              const durationMs = Date.now() - startedAt;
+              if (!response.ok) {
+                const body = await response.text();
+                console.error("[contact] resend send failed", {
+                  status: response.status,
+                  durationMs,
+                  to: recipient,
+                  subject,
+                  body,
+                });
+                return { recipient, ok: false as const };
+              }
+              let providerId: string | undefined;
+              try {
+                const data = (await response.clone().json()) as { id?: string };
+                providerId = data?.id;
+              } catch {
+                // ignore
+              }
+              console.log("[contact] email sent", {
+                status: response.status,
+                durationMs,
+                to: recipient,
+                subject,
+                providerId,
+              });
+              return { recipient, ok: true as const };
+            } catch (err) {
+              console.error("[contact] resend send threw", { to: recipient, err });
+              return { recipient, ok: false as const };
+            }
+          }),
+        );
+
+        const anySucceeded = results.some((r) => r.ok);
+        if (!anySucceeded) {
           return Response.json({ error: "Failed to send email" }, { status: 502 });
         }
-
-        let providerId: string | undefined;
-        try {
-          const data = (await response.clone().json()) as { id?: string };
-          providerId = data?.id;
-        } catch {
-          // ignore
-        }
-        console.log("[contact] email sent", {
-          status: response.status,
-          durationMs,
-          to: TO_ADDRESSES,
-          subject,
-          providerId,
-        });
 
         // Confirmation email to the sender (English)
         const confirmSubject = "We've received your message — Ayuniqa";
