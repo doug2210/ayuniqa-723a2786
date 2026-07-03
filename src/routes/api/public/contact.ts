@@ -14,7 +14,7 @@ const contactSchema = z.object({
   message: z.string().trim().min(1).max(5000),
 });
 
-const FROM_ADDRESS = "Ayuniqa Contact <notifications@mail.ayuniqa.com>";
+const FROM_ADDRESS = "Ayuniqa Contact <noreply@ayuniqa.com>";
 const TO_ADDRESSES = ["olga@ayuniqa.com", "aleks.v@ayuniqa.com"];
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
 
