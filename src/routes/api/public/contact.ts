@@ -74,6 +74,14 @@ Message:
 ${message}
 `;
 
+        const subject = `New contact — ${name}${company ? ` (${company})` : ""}`;
+        const startedAt = Date.now();
+        console.log("[contact] sending email", {
+          to: TO_ADDRESSES,
+          from: FROM_ADDRESS,
+          reply_to: email,
+          subject,
+        });
         const response = await fetch(`${GATEWAY_URL}/emails`, {
           method: "POST",
           headers: {
@@ -85,18 +93,39 @@ ${message}
             from: FROM_ADDRESS,
             to: TO_ADDRESSES,
             reply_to: email,
-            subject: `New contact — ${name}${company ? ` (${company})` : ""}`,
+            subject,
             html,
             text,
           }),
         });
 
+        const durationMs = Date.now() - startedAt;
         if (!response.ok) {
           const body = await response.text();
-          console.error("Resend send failed", response.status, body);
+          console.error("[contact] resend send failed", {
+            status: response.status,
+            durationMs,
+            to: TO_ADDRESSES,
+            subject,
+            body,
+          });
           return Response.json({ error: "Failed to send email" }, { status: 502 });
         }
 
+        let providerId: string | undefined;
+        try {
+          const data = (await response.clone().json()) as { id?: string };
+          providerId = data?.id;
+        } catch {
+          // ignore
+        }
+        console.log("[contact] email sent", {
+          status: response.status,
+          durationMs,
+          to: TO_ADDRESSES,
+          subject,
+          providerId,
+        });
         return Response.json({ ok: true });
       },
     },
