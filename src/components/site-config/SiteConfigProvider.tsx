@@ -4,7 +4,8 @@ import {
   mergeConfig,
   type SiteConfig,
 } from "@/lib/site-config";
-import { supabase, SITE_CONFIG_ROW_ID } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
+import { SITE_CONFIG_ROW_ID } from "@/integrations/supabase/site-config";
 
 type Ctx = {
   config: SiteConfig;
