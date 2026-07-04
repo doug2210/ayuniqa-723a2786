@@ -57,12 +57,16 @@ export function GameAssetUploader({
       .from(BUCKET)
       .upload(path, file, { contentType: file.type || undefined, upsert: false });
     if (upErr) throw upErr;
-    const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
+    // Private bucket: mint a long-lived signed URL (100 years).
+    const { data: signed, error: signErr } = await supabase.storage
+      .from(BUCKET)
+      .createSignedUrl(path, 60 * 60 * 24 * 365 * 100);
+    if (signErr) throw signErr;
     const asset: GameAsset = {
       id,
       name,
       folder: safeFolder,
-      url: pub.publicUrl,
+      url: signed.signedUrl,
       path,
       size: file.size,
       contentType: file.type || null,
