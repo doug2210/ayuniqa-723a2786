@@ -141,6 +141,44 @@ ${message}
           return Response.json({ error: "Failed to send email" }, { status: 502 });
         }
 
+        // Forward submission to n8n webhook (fire-and-forget, non-blocking on failure)
+        const webhookUrl = process.env.N8N_CONTACT_WEBHOOK_URL;
+        if (webhookUrl) {
+          const webhookStartedAt = Date.now();
+          try {
+            const webhookResponse = await fetch(webhookUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name,
+                company,
+                email,
+                message,
+                submitted_at: new Date().toISOString(),
+                source: "ayuniqa.com/contact",
+              }),
+            });
+            const webhookDurationMs = Date.now() - webhookStartedAt;
+            if (!webhookResponse.ok) {
+              const body = await webhookResponse.text();
+              console.error("[contact] n8n webhook failed", {
+                status: webhookResponse.status,
+                durationMs: webhookDurationMs,
+                body,
+              });
+            } else {
+              console.log("[contact] n8n webhook delivered", {
+                status: webhookResponse.status,
+                durationMs: webhookDurationMs,
+              });
+            }
+          } catch (err) {
+            console.error("[contact] n8n webhook threw", err);
+          }
+        } else {
+          console.warn("[contact] N8N_CONTACT_WEBHOOK_URL not configured; skipping webhook");
+        }
+
         // Confirmation email to the sender (English)
         const confirmSubject = "We've received your message — Ayuniqa";
         const confirmHtml = `
