@@ -49,8 +49,13 @@ export function ImageField({
           cacheControl: "31536000",
         });
       if (upErr) throw upErr;
-      const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
-      onChange(pub.publicUrl);
+      // Buckets are private (workspace policy blocks public buckets), so use
+      // a long-lived signed URL. 100 years ≈ 3153600000 s.
+      const { data: signed, error: signErr } = await supabase.storage
+        .from(BUCKET)
+        .createSignedUrl(path, 60 * 60 * 24 * 365 * 100);
+      if (signErr) throw signErr;
+      onChange(signed.signedUrl);
     } catch (err) {
       const msg = (err as Error)?.message ?? "Upload failed.";
       setError(msg);
