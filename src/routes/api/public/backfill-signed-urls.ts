@@ -28,6 +28,7 @@ export const Route = createFileRoute("/api/public/backfill-signed-urls")({
           return url.slice(idx + PUBLIC_PREFIX.length);
         };
 
+        const signErrors: Array<{ path: string; error: string }> = [];
         const sign = async (url: string | null): Promise<string | null> => {
           const path = toPath(url);
           if (!path) return url;
@@ -35,7 +36,7 @@ export const Route = createFileRoute("/api/public/backfill-signed-urls")({
             .from("site-assets")
             .createSignedUrl(path, TTL);
           if (error || !data) {
-            console.warn("[backfill] sign failed", path, error?.message);
+            signErrors.push({ path, error: error?.message ?? "no data" });
             return url;
           }
           return data.signedUrl;
@@ -86,7 +87,7 @@ export const Route = createFileRoute("/api/public/backfill-signed-urls")({
           }
         }
 
-        return new Response(JSON.stringify({ ok: true, results }), {
+        return new Response(JSON.stringify({ ok: true, results, signErrors }), {
           status: 200,
           headers: { "content-type": "application/json" },
         });
