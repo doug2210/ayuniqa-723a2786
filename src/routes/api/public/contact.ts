@@ -99,6 +99,46 @@ export const Route = createFileRoute("/api/public/contact")({
           idempotencyKey: string;
         }) {
           const messageId = crypto.randomUUID();
+          const normalizedEmail = params.to.toLowerCase();
+
+          // Get or create a durable unsubscribe token for this recipient.
+          let unsubscribeToken: string | null = null;
+          const { data: existingToken } = await supabaseAdmin
+            .from("email_unsubscribe_tokens")
+            .select("token, used_at")
+            .eq("email", normalizedEmail)
+            .maybeSingle();
+          if (existingToken?.token && !existingToken.used_at) {
+            unsubscribeToken = existingToken.token;
+          } else if (!existingToken) {
+            const bytes = new Uint8Array(32);
+            crypto.getRandomValues(bytes);
+            const newToken = Array.from(bytes)
+              .map((b) => b.toString(16).padStart(2, "0"))
+              .join("");
+            await supabaseAdmin
+              .from("email_unsubscribe_tokens")
+              .upsert(
+                { token: newToken, email: normalizedEmail },
+                { onConflict: "email", ignoreDuplicates: true },
+              );
+            const { data: stored } = await supabaseAdmin
+              .from("email_unsubscribe_tokens")
+              .select("token")
+              .eq("email", normalizedEmail)
+              .maybeSingle();
+            unsubscribeToken = stored?.token ?? newToken;
+          } else {
+            // token exists but already used — recipient previously unsubscribed
+            await supabaseAdmin.from("email_send_log").insert({
+              message_id: messageId,
+              template_name: params.templateName,
+              recipient_email: params.to,
+              status: "suppressed",
+            });
+            return false;
+          }
+
           // Log 'pending' so it shows up in email_send_log regardless of
           // enqueue outcome.
           await supabaseAdmin.from("email_send_log").insert({
@@ -121,6 +161,7 @@ export const Route = createFileRoute("/api/public/contact")({
               purpose: "transactional",
               label: params.templateName,
               idempotency_key: params.idempotencyKey,
+              unsubscribe_token: unsubscribeToken,
               queued_at: submittedAt,
             } as any,
           });
