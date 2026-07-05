@@ -51,15 +51,24 @@ export const Route = createFileRoute("/api/public/backfill-signed-urls")({
         for (const g of games ?? []) {
           const nextCover = await sign(g.cover_url);
           const nextTrailer = await sign(g.trailer_url);
-          const shots: string[] = Array.isArray(g.screenshots)
-            ? g.screenshots
+          const shotsRaw: unknown = g.screenshots;
+          const shots: string[] = Array.isArray(shotsRaw)
+            ? shotsRaw.filter((s): s is string => typeof s === "string")
             : [];
           const nextShots = await Promise.all(shots.map((s) => sign(s)));
-          const patch: Record<string, unknown> = {};
-          if (nextCover !== g.cover_url) patch.cover_url = nextCover;
-          if (nextTrailer !== g.trailer_url) patch.trailer_url = nextTrailer;
-          if (JSON.stringify(nextShots) !== JSON.stringify(shots))
-            patch.screenshots = nextShots;
+          const patch: {
+            cover_url?: string;
+            trailer_url?: string | null;
+            screenshots?: string[];
+          } = {};
+          if (nextCover && nextCover !== g.cover_url) patch.cover_url = nextCover;
+          if (nextTrailer !== g.trailer_url)
+            patch.trailer_url = nextTrailer ?? null;
+          const cleanShots = nextShots.filter(
+            (s): s is string => typeof s === "string",
+          );
+          if (JSON.stringify(cleanShots) !== JSON.stringify(shots))
+            patch.screenshots = cleanShots;
           if (Object.keys(patch).length === 0) {
             results.push({ id: g.id, updated: false });
             continue;

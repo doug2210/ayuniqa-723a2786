@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as GamesIndexRouteImport } from './routes/games.index'
 import { Route as GamesSlugRouteImport } from './routes/games.$slug'
 import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
+import { Route as ApiPublicBackfillSignedUrlsRouteImport } from './routes/api/public/backfill-signed-urls'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 
 const ServicesRoute = ServicesRouteImport.update({
@@ -59,6 +60,12 @@ const ApiPublicContactRoute = ApiPublicContactRouteImport.update({
   path: '/api/public/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBackfillSignedUrlsRoute =
+  ApiPublicBackfillSignedUrlsRouteImport.update({
+    id: '/api/public/backfill-signed-urls',
+    path: '/api/public/backfill-signed-urls',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
@@ -74,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/services': typeof ServicesRoute
   '/games/$slug': typeof GamesSlugRoute
   '/games/': typeof GamesIndexRoute
+  '/api/public/backfill-signed-urls': typeof ApiPublicBackfillSignedUrlsRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
@@ -85,6 +93,7 @@ export interface FileRoutesByTo {
   '/services': typeof ServicesRoute
   '/games/$slug': typeof GamesSlugRoute
   '/games': typeof GamesIndexRoute
+  '/api/public/backfill-signed-urls': typeof ApiPublicBackfillSignedUrlsRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
@@ -97,6 +106,7 @@ export interface FileRoutesById {
   '/services': typeof ServicesRoute
   '/games/$slug': typeof GamesSlugRoute
   '/games/': typeof GamesIndexRoute
+  '/api/public/backfill-signed-urls': typeof ApiPublicBackfillSignedUrlsRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/services'
     | '/games/$slug'
     | '/games/'
+    | '/api/public/backfill-signed-urls'
     | '/api/public/contact'
     | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/services'
     | '/games/$slug'
     | '/games'
+    | '/api/public/backfill-signed-urls'
     | '/api/public/contact'
     | '/lovable/email/queue/process'
   id:
@@ -132,6 +144,7 @@ export interface FileRouteTypes {
     | '/services'
     | '/games/$slug'
     | '/games/'
+    | '/api/public/backfill-signed-urls'
     | '/api/public/contact'
     | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
@@ -144,6 +157,7 @@ export interface RootRouteChildren {
   ServicesRoute: typeof ServicesRoute
   GamesSlugRoute: typeof GamesSlugRoute
   GamesIndexRoute: typeof GamesIndexRoute
+  ApiPublicBackfillSignedUrlsRoute: typeof ApiPublicBackfillSignedUrlsRoute
   ApiPublicContactRoute: typeof ApiPublicContactRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
@@ -206,6 +220,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/backfill-signed-urls': {
+      id: '/api/public/backfill-signed-urls'
+      path: '/api/public/backfill-signed-urls'
+      fullPath: '/api/public/backfill-signed-urls'
+      preLoaderRoute: typeof ApiPublicBackfillSignedUrlsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
       path: '/lovable/email/queue/process'
@@ -224,19 +245,10 @@ const rootRouteChildren: RootRouteChildren = {
   ServicesRoute: ServicesRoute,
   GamesSlugRoute: GamesSlugRoute,
   GamesIndexRoute: GamesIndexRoute,
+  ApiPublicBackfillSignedUrlsRoute: ApiPublicBackfillSignedUrlsRoute,
   ApiPublicContactRoute: ApiPublicContactRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
