@@ -19,7 +19,6 @@ const contactSchema = z.object({
 
 const FROM_ADDRESS = "Ayuniqa <notify@notify.ayuniqa.com>";
 const SENDER_DOMAIN = "notify.ayuniqa.com";
-const FROM_DOMAIN = "notify.ayuniqa.com";
 const TO_ADDRESSES = [
   "olga@ayuniqa.com",
   "aleks.v@ayuniqa.com",
