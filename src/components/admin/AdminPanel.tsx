@@ -18,6 +18,7 @@ import {
   Check,
   Image as ImageIcon,
   Inbox as InboxIcon,
+  Send as SendIcon,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,7 @@ import { ImageField } from "./ImageField";
 import { adminSignOut } from "./AdminGate";
 import { GameAssetUploader } from "./GameAssetUploader";
 import { ContactInbox } from "./ContactInbox";
+import { EmailDeliveryLog } from "./EmailDeliveryLog";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -151,7 +153,7 @@ export function AdminPanel() {
       </header>
 
       <Tabs defaultValue="floating">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-8">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-9">
           <TabsTrigger value="brand"><ImageIcon className="!size-3.5" /> Brand</TabsTrigger>
           <TabsTrigger value="floating"><Sparkles className="!size-3.5" /> Symbols</TabsTrigger>
           <TabsTrigger value="hero"><Settings2 className="!size-3.5" /> Hero</TabsTrigger>
@@ -160,6 +162,7 @@ export function AdminPanel() {
           <TabsTrigger value="contact"><MessageSquare className="!size-3.5" /> Contact</TabsTrigger>
           <TabsTrigger value="social"><Share2 className="!size-3.5" /> Social</TabsTrigger>
           <TabsTrigger value="inbox"><InboxIcon className="!size-3.5" /> Inbox</TabsTrigger>
+          <TabsTrigger value="emails"><SendIcon className="!size-3.5" /> Emails</TabsTrigger>
         </TabsList>
 
         <TabsContent value="brand" className="mt-6">
@@ -210,6 +213,10 @@ export function AdminPanel() {
 
         <TabsContent value="inbox" className="mt-6">
           <ContactInbox />
+        </TabsContent>
+
+        <TabsContent value="emails" className="mt-6">
+          <EmailDeliveryLog />
         </TabsContent>
       </Tabs>
     </div>
