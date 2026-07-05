@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import * as React from "react";
+import { render } from "@react-email/render";
+import { TEMPLATES } from "@/lib/email-templates/registry";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1).max(120),
@@ -14,18 +17,15 @@ const contactSchema = z.object({
   message: z.string().trim().min(1).max(5000),
 });
 
-const FROM_ADDRESS = "Ayuniqa Contact <marketing@ayuniqa.com>";
-const TO_ADDRESSES = ["olga@ayuniqa.com", "aleks.v@ayuniqa.com", "marketing@ayuniqa.com"];
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
+const FROM_ADDRESS = "Ayuniqa <notify@notify.ayuniqa.com>";
+const SENDER_DOMAIN = "notify.ayuniqa.com";
+const FROM_DOMAIN = "notify.ayuniqa.com";
+const TO_ADDRESSES = [
+  "olga@ayuniqa.com",
+  "aleks.v@ayuniqa.com",
+  "marketing@ayuniqa.com",
+];
+const INTERNAL_REPLY_TO = "marketing@ayuniqa.com";
 
 export const Route = createFileRoute("/api/public/contact")({
   server: {
@@ -47,99 +47,131 @@ export const Route = createFileRoute("/api/public/contact")({
         }
         const { name, company, email, message } = parsed.data;
 
-        const lovableApiKey = process.env.LOVABLE_API_KEY;
-        const resendApiKey = process.env.RESEND_API_KEY;
-        if (!lovableApiKey || !resendApiKey) {
-          console.error("Missing LOVABLE_API_KEY or RESEND_API_KEY");
-          return Response.json({ error: "Email service not configured" }, { status: 500 });
-        }
-
-        const html = `
-          <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
-            <h2 style="margin:0 0 16px">New contact message</h2>
-            <p style="margin:4px 0"><strong>Name:</strong> ${escapeHtml(name)}</p>
-            ${company ? `<p style="margin:4px 0"><strong>Company:</strong> ${escapeHtml(company)}</p>` : ""}
-            <p style="margin:4px 0"><strong>Email:</strong> ${escapeHtml(email)}</p>
-            <p style="margin:16px 0 4px"><strong>Message:</strong></p>
-            <div style="white-space:pre-wrap;padding:12px;background:#f6f4f0;border-radius:8px;border:1px solid #e7e2d8">${escapeHtml(message)}</div>
-          </div>
-        `;
-
-        const text = `New contact message
-
-Name: ${name}
-${company ? `Company: ${company}\n` : ""}Email: ${email}
-
-Message:
-${message}
-`;
-
-        const subject = `New contact — ${name}${company ? ` (${company})` : ""}`;
-        console.log("[contact] sending emails", {
-          to: TO_ADDRESSES,
-          from: FROM_ADDRESS,
-          reply_to: email,
-          subject,
-        });
-
-        const results = await Promise.all(
-          TO_ADDRESSES.map(async (recipient) => {
-            const startedAt = Date.now();
-            try {
-              const response = await fetch(`${GATEWAY_URL}/emails`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${lovableApiKey}`,
-                  "X-Connection-Api-Key": resendApiKey,
-                },
-                body: JSON.stringify({
-                  from: FROM_ADDRESS,
-                  to: [recipient],
-                  reply_to: email,
-                  subject,
-                  html,
-                  text,
-                }),
-              });
-              const durationMs = Date.now() - startedAt;
-              if (!response.ok) {
-                const body = await response.text();
-                console.error("[contact] resend send failed", {
-                  status: response.status,
-                  durationMs,
-                  to: recipient,
-                  subject,
-                  body,
-                });
-                return { recipient, ok: false as const };
-              }
-              let providerId: string | undefined;
-              try {
-                const data = (await response.clone().json()) as { id?: string };
-                providerId = data?.id;
-              } catch {
-                // ignore
-              }
-              console.log("[contact] email sent", {
-                status: response.status,
-                durationMs,
-                to: recipient,
-                subject,
-                providerId,
-              });
-              return { recipient, ok: true as const };
-            } catch (err) {
-              console.error("[contact] resend send threw", { to: recipient, err });
-              return { recipient, ok: false as const };
-            }
-          }),
+        const { supabaseAdmin } = await import(
+          "@/integrations/supabase/client.server"
         );
 
-        const anySucceeded = results.some((r) => r.ok);
-        if (!anySucceeded) {
-          return Response.json({ error: "Failed to send email" }, { status: 502 });
+        const notification = TEMPLATES["contact-notification"];
+        const confirmation = TEMPLATES["contact-confirmation"];
+        if (!notification || !confirmation) {
+          console.error("[contact] missing email templates in registry");
+          return Response.json(
+            { error: "Email service not configured" },
+            { status: 500 },
+          );
         }
+
+        // Render each email once on the server, then enqueue per recipient
+        // through Lovable Emails (pgmq -> process-email-queue cron).
+        const notifData = { name, company, email, message };
+        const notifSubject =
+          typeof notification.subject === "function"
+            ? notification.subject(notifData)
+            : notification.subject;
+        const notifElement = React.createElement(
+          notification.component,
+          notifData,
+        );
+        const notifHtml = await render(notifElement);
+        const notifText = await render(notifElement, { plainText: true });
+
+        const confirmData = { name, message };
+        const confirmSubject =
+          typeof confirmation.subject === "function"
+            ? confirmation.subject(confirmData)
+            : confirmation.subject;
+        const confirmElement = React.createElement(
+          confirmation.component,
+          confirmData,
+        );
+        const confirmHtml = await render(confirmElement);
+        const confirmText = await render(confirmElement, { plainText: true });
+
+        const submittedAt = new Date().toISOString();
+        const batchKey = `contact-${Date.now()}-${email.toLowerCase()}`;
+
+        async function enqueue(params: {
+          to: string;
+          replyTo: string;
+          subject: string;
+          html: string;
+          text: string;
+          templateName: string;
+          idempotencyKey: string;
+        }) {
+          const messageId = crypto.randomUUID();
+          // Log 'pending' so it shows up in email_send_log regardless of
+          // enqueue outcome.
+          await supabaseAdmin.from("email_send_log").insert({
+            message_id: messageId,
+            template_name: params.templateName,
+            recipient_email: params.to,
+            status: "pending",
+          });
+          const { error } = await supabaseAdmin.rpc("enqueue_email", {
+            queue_name: "transactional_emails",
+            payload: {
+              message_id: messageId,
+              to: params.to,
+              from: FROM_ADDRESS,
+              reply_to: params.replyTo,
+              sender_domain: SENDER_DOMAIN,
+              subject: params.subject,
+              html: params.html,
+              text: params.text,
+              purpose: "transactional",
+              label: params.templateName,
+              idempotency_key: params.idempotencyKey,
+              queued_at: submittedAt,
+            } as any,
+          });
+          if (error) {
+            console.error("[contact] enqueue failed", {
+              to: params.to,
+              template: params.templateName,
+              error: error.message,
+            });
+            await supabaseAdmin.from("email_send_log").insert({
+              message_id: messageId,
+              template_name: params.templateName,
+              recipient_email: params.to,
+              status: "failed",
+              error_message: error.message,
+            });
+            return false;
+          }
+          return true;
+        }
+
+        const notifyResults = await Promise.all(
+          TO_ADDRESSES.map((to) =>
+            enqueue({
+              to,
+              replyTo: email,
+              subject: notifSubject,
+              html: notifHtml,
+              text: notifText,
+              templateName: "contact-notification",
+              idempotencyKey: `${batchKey}-notify-${to}`,
+            }),
+          ),
+        );
+        if (!notifyResults.some(Boolean)) {
+          return Response.json(
+            { error: "Failed to enqueue email" },
+            { status: 502 },
+          );
+        }
+
+        await enqueue({
+          to: email,
+          replyTo: INTERNAL_REPLY_TO,
+          subject: confirmSubject,
+          html: confirmHtml,
+          text: confirmText,
+          templateName: "contact-confirmation",
+          idempotencyKey: `${batchKey}-confirm`,
+        });
 
         // Forward submission to n8n webhook (fire-and-forget, non-blocking on failure)
         const webhookUrl = process.env.N8N_CONTACT_WEBHOOK_URL;
@@ -177,84 +209,6 @@ ${message}
           }
         } else {
           console.warn("[contact] N8N_CONTACT_WEBHOOK_URL not configured; skipping webhook");
-        }
-
-        // Confirmation email to the sender (English)
-        const confirmSubject = "We've received your message — Ayuniqa";
-        const confirmHtml = `
-          <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
-            <h2 style="margin:0 0 16px">Thanks for reaching out, ${escapeHtml(name)}!</h2>
-            <p style="margin:0 0 12px;line-height:1.5">
-              We've received your message and a member of the Ayuniqa team will get back to you within one business day.
-            </p>
-            <p style="margin:0 0 12px;line-height:1.5">For your reference, here's a copy of what you sent:</p>
-            <div style="white-space:pre-wrap;padding:12px;background:#f6f4f0;border-radius:8px;border:1px solid #e7e2d8">${escapeHtml(message)}</div>
-            <p style="margin:24px 0 4px;line-height:1.5">Talk soon,<br/>The Ayuniqa Team</p>
-          </div>
-        `;
-        const confirmText = `Thanks for reaching out, ${name}!
-
-We've received your message and a member of the Ayuniqa team will get back to you within one business day.
-
-For your reference, here's a copy of what you sent:
-
-${message}
-
-Talk soon,
-The Ayuniqa Team
-`;
-
-        const confirmStartedAt = Date.now();
-        console.log("[contact] sending confirmation email", {
-          to: email,
-          from: FROM_ADDRESS,
-          subject: confirmSubject,
-        });
-        try {
-          const confirmResponse = await fetch(`${GATEWAY_URL}/emails`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${lovableApiKey}`,
-              "X-Connection-Api-Key": resendApiKey,
-            },
-            body: JSON.stringify({
-              from: FROM_ADDRESS,
-              to: [email],
-              reply_to: TO_ADDRESSES[0],
-              subject: confirmSubject,
-              html: confirmHtml,
-              text: confirmText,
-            }),
-          });
-          const confirmDurationMs = Date.now() - confirmStartedAt;
-          if (!confirmResponse.ok) {
-            const body = await confirmResponse.text();
-            console.error("[contact] confirmation send failed", {
-              status: confirmResponse.status,
-              durationMs: confirmDurationMs,
-              to: email,
-              subject: confirmSubject,
-              body,
-            });
-          } else {
-            let confirmProviderId: string | undefined;
-            try {
-              const data = (await confirmResponse.clone().json()) as { id?: string };
-              confirmProviderId = data?.id;
-            } catch {
-              // ignore
-            }
-            console.log("[contact] confirmation email sent", {
-              status: confirmResponse.status,
-              durationMs: confirmDurationMs,
-              to: email,
-              subject: confirmSubject,
-              providerId: confirmProviderId,
-            });
-          }
-        } catch (err) {
-          console.error("[contact] confirmation send threw", err);
         }
 
         return Response.json({ ok: true });
