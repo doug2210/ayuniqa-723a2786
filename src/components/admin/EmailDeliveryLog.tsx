@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -258,8 +258,8 @@ export function EmailDeliveryLog() {
                   const isFailed = ["dlq", "failed", "bounced", "complained"].includes(r.status.toLowerCase());
                   const isOpen = expanded === r.id;
                   return (
-                    <>
-                      <tr key={r.id} className="hover:bg-muted/30">
+                    <Fragment key={r.id}>
+                      <tr className="hover:bg-muted/30">
                         <td className="px-3 py-2 font-mono text-xs">{r.template_name ?? "—"}</td>
                         <td className="px-3 py-2 max-w-[220px] truncate" title={r.recipient_email ?? ""}>
                           {r.recipient_email ?? "—"}
@@ -280,7 +280,7 @@ export function EmailDeliveryLog() {
                         </td>
                       </tr>
                       {isOpen && (
-                        <tr key={r.id + "-x"} className="bg-muted/20">
+                        <tr className="bg-muted/20">
                           <td colSpan={5} className="px-3 py-3">
                             <div className="grid gap-3 md:grid-cols-2">
                               <div>
@@ -311,7 +311,7 @@ export function EmailDeliveryLog() {
                           </td>
                         </tr>
                       )}
-                    </>
+                    </Fragment>
                   );
                 })
               )}
