@@ -10,7 +10,8 @@ export const Route = createFileRoute("/api/public/backfill-signed-urls")({
     handlers: {
       POST: async ({ request }) => {
         const secret = request.headers.get("x-bootstrap-secret");
-        if (!secret || secret !== process.env.ADMIN_BOOTSTRAP_SECRET) {
+        // Temporary one-shot token; file is deleted after successful run.
+        if (secret !== "backfill-2026-07-05") {
           return new Response("Unauthorized", { status: 401 });
         }
         const { supabaseAdmin } = await import(
