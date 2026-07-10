@@ -55,7 +55,8 @@ function fromRow(row: Record<string, unknown>): DbGame {
 
 export async function fetchGames(): Promise<DbGame[]> {
   const { data, error } = await supabase
-    .from("games")
+    // Public-safe view that strips internal storage paths from `assets`.
+    .from("games_public" as never)
     .select("*")
     .order("position", { ascending: true })
     .order("created_at", { ascending: true });
@@ -63,13 +64,39 @@ export async function fetchGames(): Promise<DbGame[]> {
     console.warn("[games] fetch failed:", error.message);
     return [];
   }
-  return (data ?? []).map((r) => fromRow(r as Record<string, unknown>));
+  return ((data ?? []) as unknown as Record<string, unknown>[]).map(fromRow);
 }
 
 export function useGames() {
   return useQuery({
     queryKey: ["games"],
     queryFn: fetchGames,
+    staleTime: 30_000,
+  });
+}
+
+/**
+ * Admin-only fetch that queries the raw `games` table, including internal
+ * storage paths inside `assets` (needed to delete files from storage). Guarded
+ * by RLS: only authenticated users can read this table.
+ */
+export async function fetchGamesAdmin(): Promise<DbGame[]> {
+  const { data, error } = await supabase
+    .from("games")
+    .select("*")
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (error) {
+    console.warn("[games:admin] fetch failed:", error.message);
+    return [];
+  }
+  return (data ?? []).map((r) => fromRow(r as Record<string, unknown>));
+}
+
+export function useGamesAdmin() {
+  return useQuery({
+    queryKey: ["games", "admin"],
+    queryFn: fetchGamesAdmin,
     staleTime: 30_000,
   });
 }
