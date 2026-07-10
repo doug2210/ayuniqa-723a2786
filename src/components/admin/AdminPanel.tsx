@@ -29,7 +29,7 @@ import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
 import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
 import {
-  useGames,
+  useGamesAdmin,
   useUpsertGame,
   useDeleteGame,
   emptyGame,
@@ -985,7 +985,7 @@ function SliderField({
 /* ---------- Games editor ---------- */
 
 function GamesEditor() {
-  const { data: games = [], isLoading } = useGames();
+  const { data: games = [], isLoading } = useGamesAdmin();
   const upsert = useUpsertGame();
   const del = useDeleteGame();
   const DRAFT_KEY = "ayuniqa.admin.gameDraft.v1";

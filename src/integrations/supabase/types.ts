@@ -292,7 +292,75 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      games_public: {
+        Row: {
+          assets: Json | null
+          category: string | null
+          cover_url: string | null
+          created_at: string | null
+          demo_url: string | null
+          description: string | null
+          features: Json | null
+          id: string | null
+          paylines: number | null
+          position: number | null
+          reels: string | null
+          rtp: number | null
+          screenshots: Json | null
+          slug: string | null
+          status: string | null
+          tagline: string | null
+          title: string | null
+          trailer_url: string | null
+          updated_at: string | null
+          volatility: string | null
+        }
+        Insert: {
+          assets?: never
+          category?: string | null
+          cover_url?: string | null
+          created_at?: string | null
+          demo_url?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string | null
+          paylines?: number | null
+          position?: number | null
+          reels?: string | null
+          rtp?: number | null
+          screenshots?: Json | null
+          slug?: string | null
+          status?: string | null
+          tagline?: string | null
+          title?: string | null
+          trailer_url?: string | null
+          updated_at?: string | null
+          volatility?: string | null
+        }
+        Update: {
+          assets?: never
+          category?: string | null
+          cover_url?: string | null
+          created_at?: string | null
+          demo_url?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string | null
+          paylines?: number | null
+          position?: number | null
+          reels?: string | null
+          rtp?: number | null
+          screenshots?: Json | null
+          slug?: string | null
+          status?: string | null
+          tagline?: string | null
+          title?: string | null
+          trailer_url?: string | null
+          updated_at?: string | null
+          volatility?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       current_user_has_role: {
