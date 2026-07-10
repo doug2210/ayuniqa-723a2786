@@ -30,6 +30,7 @@ import { Card } from "@/components/ui/card";
 import { useSiteConfig } from "@/components/site-config/SiteConfigProvider";
 import {
   useGames,
+  useGamesAdmin,
   useUpsertGame,
   useDeleteGame,
   emptyGame,
