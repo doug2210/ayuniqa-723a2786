@@ -16,3 +16,5 @@ GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticate
 
 - Não mexer em outras políticas, buckets, ou views.
 - Não alterar `current_user_has_role` (não é usada por políticas de storage).
+
+<!-- deploy bump: force GitHub Actions rerun after sync -->
