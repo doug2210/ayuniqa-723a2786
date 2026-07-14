@@ -26,22 +26,38 @@ const TO_ADDRESSES = [
 ];
 const INTERNAL_REPLY_TO = "marketing@ayuniqa.com";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Max-Age": "86400",
+} as const;
+
+function jsonWithCors(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+  });
+}
+
 export const Route = createFileRoute("/api/public/contact")({
   server: {
     handlers: {
+      OPTIONS: async () =>
+        new Response(null, { status: 204, headers: CORS_HEADERS }),
       POST: async ({ request }) => {
         let json: unknown;
         try {
           json = await request.json();
         } catch {
-          return Response.json({ error: "Invalid JSON" }, { status: 400 });
+          return jsonWithCors({ error: "Invalid JSON" }, 400);
         }
 
         const parsed = contactSchema.safeParse(json);
         if (!parsed.success) {
-          return Response.json(
+          return jsonWithCors(
             { error: parsed.error.issues[0]?.message ?? "Invalid input" },
-            { status: 400 },
+            400,
           );
         }
         const { name, company, email, message } = parsed.data;
