@@ -113,7 +113,14 @@ Deno.serve(async (req) => {
     .from("user_roles")
     .select("role")
     .eq("role", "admin");
-  return json({ ok: true, status, email, admin_rows: userRow?.length ?? 0 });
+  return json({
+    ok: true,
+    status,
+    email,
+    admin_rows: userRow?.length ?? 0,
+    action_link: props.action_link,
+    email_enqueue_error: enqErr ? enqErr.message : null,
+  });
 });
 
 function json(body: unknown, status = 200) {
