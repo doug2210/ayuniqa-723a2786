@@ -114,7 +114,16 @@ function Contact() {
                   }
                   // Fire-and-acknowledge email notification
                   try {
-                    const res = await fetch("/api/public/contact", {
+                    // On non-Lovable hosts (e.g. GitHub Pages custom domain),
+                    // the /api/public/* server route doesn't exist — call the
+                    // Lovable-hosted backend directly (CORS enabled).
+                    const isLovableHost =
+                      typeof window !== "undefined" &&
+                      /\.lovable\.app$/i.test(window.location.hostname);
+                    const endpoint = isLovableHost
+                      ? "/api/public/contact"
+                      : "https://ayuniqa.lovable.app/api/public/contact";
+                    const res = await fetch(endpoint, {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify(parsed.data),
