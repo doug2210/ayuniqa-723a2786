@@ -1,19 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { z } from "zod";
 
-// Protected admin-bootstrap endpoint.
-// - Requires header `x-bootstrap-secret` matching ADMIN_BOOTSTRAP_SECRET.
-// - Creates the auth user with email_confirm=true (fires the DB trigger
-//   `grant_admin_for_ayuniqa_emails`, which grants the admin role for
-//   whitelisted addresses like marketing@ayuniqa.com).
-// - If the user already exists, no-ops on creation.
-// - Sends a password recovery email so the recipient sets their own password
-//   via `/reset-password` — we never email plaintext passwords.
+// One-shot admin-bootstrap endpoint (whitelisted to marketing@ayuniqa.com).
+// Delete this file after use.
+//
+// Creates the auth user with email_confirm=true (fires the DB trigger
+// `grant_admin_for_ayuniqa_emails`, which grants the admin role for
+// whitelisted addresses), then enqueues a branded recovery email so the
+// recipient sets their own password via `/reset-password`.
+// The whitelist is what makes this safe to leave open briefly: any other
+// email is rejected, and even repeat calls just re-send the same recovery
+// email to that one address.
 
-const bodySchema = z.object({
-  email: z.string().trim().email().max(254),
-  redirectTo: z.string().url().optional(),
-});
+const ALLOWED_EMAIL = "marketing@ayuniqa.com";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -33,31 +31,9 @@ export const Route = createFileRoute("/api/public/bootstrap-admin")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       POST: async ({ request }) => {
-        const secret = process.env.ADMIN_BOOTSTRAP_SECRET;
-        if (!secret) return json({ error: "Server not configured" }, 500);
-        const header = request.headers.get("x-bootstrap-secret") ?? "";
-        if (header !== secret) return json({ error: "Unauthorized" }, 401);
-
-        let raw: unknown;
-        try {
-          raw = await request.json();
-        } catch {
-          return json({ error: "Invalid JSON" }, 400);
-        }
-        const parsed = bodySchema.safeParse(raw);
-        if (!parsed.success) {
-          return json(
-            { error: parsed.error.issues[0]?.message ?? "Invalid input" },
-            400,
-          );
-        }
-        const { email, redirectTo } = parsed.data;
-        const origin =
-          new URL(request.url).origin.replace(
-            /^https?:\/\/id-preview--/,
-            "https://",
-          );
-        const resetRedirect = redirectTo ?? `${origin}/reset-password`;
+        const email = ALLOWED_EMAIL;
+        const origin = new URL(request.url).origin;
+        const resetRedirect = `${origin}/reset-password`;
 
         const { supabaseAdmin } = await import(
           "@/integrations/supabase/client.server"
