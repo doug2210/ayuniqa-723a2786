@@ -213,10 +213,7 @@ export const Route = createFileRoute("/api/public/contact")({
           ),
         );
         if (!notifyResults.some(Boolean)) {
-          return Response.json(
-            { error: "Failed to enqueue email" },
-            { status: 502 },
-          );
+          return jsonWithCors({ error: "Failed to enqueue email" }, 502);
         }
 
         await enqueue({
@@ -267,7 +264,7 @@ export const Route = createFileRoute("/api/public/contact")({
           console.warn("[contact] N8N_CONTACT_WEBHOOK_URL not configured; skipping webhook");
         }
 
-        return Response.json({ ok: true });
+        return jsonWithCors({ ok: true });
       },
     },
   },
