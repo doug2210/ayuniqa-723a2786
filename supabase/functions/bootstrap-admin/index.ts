@@ -7,6 +7,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const ALLOWED_EMAIL = "marketing@ayuniqa.com";
 const RESET_REDIRECT = "https://ayuniqa.com/reset-password";
+const FROM_ADDRESS = "Ayuniqa <notify@notify.ayuniqa.com>";
+const SENDER_DOMAIN = "notify.ayuniqa.com";
+const REPLY_TO = "marketing@ayuniqa.com";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -69,23 +72,31 @@ Deno.serve(async (req) => {
 
   // 3. Enqueue a branded recovery email via the auth_emails pgmq queue.
   const messageId = crypto.randomUUID();
+  const subject = "Set your Ayuniqa admin password";
+  const html = renderHtml(props.action_link);
+  const text = renderText(props.action_link);
+  const idempotencyKey = `bootstrap-admin-${email}-${Date.now()}`;
+
   await admin.from("email_send_log").insert({
     message_id: messageId,
-    template_name: "recovery",
+    template_name: "admin-bootstrap",
     recipient_email: email,
     status: "pending",
   });
   const { error: enqErr } = await admin.rpc("enqueue_email", {
-    queue_name: "auth_emails",
+    queue_name: "transactional_emails",
     payload: {
       message_id: messageId,
       to: email,
-      email_action_type: "recovery",
-      action_link: props.action_link,
-      redirect_to: RESET_REDIRECT,
-      token_hash: props.hashed_token,
-      token: props.email_otp,
-      site_url: new URL(RESET_REDIRECT).origin,
+      from: FROM_ADDRESS,
+      reply_to: REPLY_TO,
+      sender_domain: SENDER_DOMAIN,
+      subject,
+      html,
+      text,
+      purpose: "transactional",
+      label: "admin-bootstrap",
+      idempotency_key: idempotencyKey,
       queued_at: new Date().toISOString(),
     },
   });
@@ -110,4 +121,44 @@ function json(body: unknown, status = 200) {
     status,
     headers: { "Content-Type": "application/json", ...CORS },
   });
+}
+
+function renderHtml(link: string): string {
+  const safe = link.replace(/"/g, "&quot;");
+  return `<!doctype html><html><body style="margin:0;background:#ffffff;font-family:Arial,sans-serif;color:#111;">
+  <div style="max-width:560px;margin:0 auto;padding:32px 24px;">
+    <h1 style="font-size:22px;margin:0 0 12px;">Welcome to Ayuniqa Admin</h1>
+    <p style="font-size:15px;line-height:1.5;margin:0 0 16px;">
+      An admin account was created for <strong>${ALLOWED_EMAIL}</strong>.
+      Click the button below to set your password and sign in.
+    </p>
+    <p style="margin:24px 0;">
+      <a href="${safe}" style="display:inline-block;padding:12px 20px;background:#111;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">
+        Set your password
+      </a>
+    </p>
+    <p style="font-size:13px;color:#555;line-height:1.5;margin:0 0 8px;">
+      Or copy this link into your browser:
+    </p>
+    <p style="font-size:12px;color:#555;word-break:break-all;margin:0 0 24px;">
+      ${safe}
+    </p>
+    <p style="font-size:12px;color:#888;margin:0;">
+      This link expires within a short time for security. If you did not expect this email, you can ignore it.
+    </p>
+  </div></body></html>`;
+}
+
+function renderText(link: string): string {
+  return [
+    "Welcome to Ayuniqa Admin",
+    "",
+    `An admin account was created for ${ALLOWED_EMAIL}.`,
+    "Open the link below to set your password and sign in:",
+    "",
+    link,
+    "",
+    "This link expires within a short time for security.",
+    "If you did not expect this email, you can ignore it.",
+  ].join("\n");
 }
