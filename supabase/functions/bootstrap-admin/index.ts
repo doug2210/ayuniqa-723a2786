@@ -6,7 +6,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const ALLOWED_EMAIL = "marketing@ayuniqa.com";
-const RESET_REDIRECT = "https://ayuniqa.com/reset-password";
+const RESET_REDIRECT = "https://ayuniqa.lovable.app/reset-password";
 const FROM_ADDRESS = "Ayuniqa <notify@notify.ayuniqa.com>";
 const SENDER_DOMAIN = "notify.ayuniqa.com";
 const REPLY_TO = "marketing@ayuniqa.com";
