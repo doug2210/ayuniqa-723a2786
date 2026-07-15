@@ -151,6 +151,13 @@ export function AdminPanel() {
           <Button variant="ghost" size="sm" onClick={adminSignOut}>
             <LogOut className="!size-3.5" /> Sign out
           </Button>
+          <ChangePasswordDialog
+            trigger={
+              <Button variant="outline" size="sm">
+                <KeyRound className="!size-3.5" /> Alterar senha
+              </Button>
+            }
+          />
         </div>
       </header>
 
