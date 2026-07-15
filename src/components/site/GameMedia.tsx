@@ -78,14 +78,14 @@ export function PlayDemoButton({ url, title }: { url?: string | null; title: str
         <Play className="!size-4" /> Play demo
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent hideCloseButton className="max-w-5xl border-border bg-card p-0">
+        <DialogContent hideCloseButton className="max-w-5xl border-border bg-card p-0 sm:w-auto w-[95vw]">
           <DialogHeader className="flex flex-row items-center justify-between border-b border-border p-3">
             <DialogTitle>{title} — demo</DialogTitle>
             <Button variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Close">
               <X className="!size-4" />
             </Button>
           </DialogHeader>
-          <div className="aspect-video w-full bg-black">
+          <div className="aspect-[9/16] w-full bg-black sm:aspect-video">
             <iframe
               src={url}
               title={`${title} demo`}
