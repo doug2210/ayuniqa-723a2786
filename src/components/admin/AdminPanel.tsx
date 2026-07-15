@@ -111,14 +111,14 @@ export function AdminPanel() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
+      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-3xl font-black tracking-tight">Site admin</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Changes are saved instantly to Lovable Cloud and go live for all visitors.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
           <Button asChild variant="outline" size="sm">
             <Link to="/"><ExternalLink className="!size-3.5" /> View site</Link>
           </Button>
@@ -153,8 +153,8 @@ export function AdminPanel() {
           </Button>
           <ChangePasswordDialog
             trigger={
-              <Button variant="outline" size="sm">
-                <KeyRound className="!size-3.5" /> Alterar senha
+              <Button variant="outline" size="sm" className="shrink-0">
+                <KeyRound className="!size-3.5" /> Change password
               </Button>
             }
           />
@@ -162,7 +162,7 @@ export function AdminPanel() {
       </header>
 
       <Tabs defaultValue="floating">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-9">
+        <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 sm:grid sm:grid-cols-3 lg:grid-cols-9">
           <TabsTrigger value="brand"><ImageIcon className="!size-3.5" /> Brand</TabsTrigger>
           <TabsTrigger value="floating"><Sparkles className="!size-3.5" /> Symbols</TabsTrigger>
           <TabsTrigger value="hero"><Settings2 className="!size-3.5" /> Hero</TabsTrigger>
@@ -495,7 +495,7 @@ function HeroTextEditor({
             })
           }
         >
-          <RotateCcw className="!size-3.5" /> Reset textos
+          <RotateCcw className="!size-3.5" /> Reset text
         </Button>
       </div>
     </Card>
@@ -662,7 +662,7 @@ function HeroScrollEditor({
             >
               <div className="font-bold">Scroll</div>
               <div className="text-xs text-muted-foreground">
-                Avança quadro a quadro conforme o usuário rola a página.
+                Advances frame by frame as the user scrolls the page.
               </div>
             </button>
             <button
@@ -676,7 +676,7 @@ function HeroScrollEditor({
             >
               <div className="font-bold">Loop</div>
               <div className="text-xs text-muted-foreground">
-                Toca automaticamente em loop, sem interagir com o scroll.
+                Plays automatically on loop, without reacting to scroll.
               </div>
             </button>
           </div>
