@@ -18,7 +18,6 @@ import {
   Check,
   Image as ImageIcon,
   Inbox as InboxIcon,
-  Send as SendIcon,
   KeyRound,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
