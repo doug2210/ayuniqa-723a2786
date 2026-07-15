@@ -49,10 +49,10 @@ export function ChangePasswordDialog({ trigger }: { trigger: ReactNode }) {
     try {
       const res = await call({ data: { email, newPassword: password } });
       setSuccess(
-        `Senha atualizada para ${res.email}. Copie e envie manualmente ao usuário.`,
+        `Password updated for ${res.email}. Copy it and send it to the user manually.`,
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Falha ao atualizar senha.");
+      setError(err instanceof Error ? err.message : "Failed to update password.");
     } finally {
       setBusy(false);
     }
@@ -69,15 +69,15 @@ export function ChangePasswordDialog({ trigger }: { trigger: ReactNode }) {
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Alterar senha de usuário</DialogTitle>
+          <DialogTitle>Change user password</DialogTitle>
           <DialogDescription>
-            Redefine diretamente a senha de qualquer conta aprovada, sem
-            precisar de e-mail de recuperação.
+            Directly reset the password for any approved account, without
+            relying on recovery emails.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="cp-email">E-mail do usuário</Label>
+            <Label htmlFor="cp-email">User email</Label>
             <Input
               id="cp-email"
               type="email"
@@ -90,13 +90,13 @@ export function ChangePasswordDialog({ trigger }: { trigger: ReactNode }) {
           </div>
           <div>
             <div className="flex items-center justify-between">
-              <Label htmlFor="cp-password">Nova senha (mín. 10)</Label>
+              <Label htmlFor="cp-password">New password (min. 10)</Label>
               <button
                 type="button"
                 className="text-xs text-muted-foreground underline"
                 onClick={() => setPassword(randomPassword(16))}
               >
-                Gerar aleatória
+                Generate random
               </button>
             </div>
             <Input
@@ -118,10 +118,10 @@ export function ChangePasswordDialog({ trigger }: { trigger: ReactNode }) {
           )}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Fechar
+              Close
             </Button>
             <Button type="submit" disabled={busy}>
-              {busy ? "Salvando…" : "Atualizar senha"}
+              {busy ? "Saving…" : "Update password"}
             </Button>
           </DialogFooter>
         </form>
