@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { ArrowLeft, Check } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
@@ -9,10 +10,8 @@ import { GameTrailer, GameScreenshots, PlayDemoButton } from "@/components/site/
 import { GameAssetsBrowser } from "@/components/site/GameAssetsBrowser";
 
 export const Route = createFileRoute("/games/$slug")({
-  head: ({ params }) => ({
-    meta: [
-      { title: `${params.slug} — Ayuniqa` },
-    ],
+  head: () => ({
+    meta: [{ title: "Game — Ayuniqa" }],
   }),
   notFoundComponent: () => (
     <SiteLayout>
@@ -38,6 +37,9 @@ export const Route = createFileRoute("/games/$slug")({
 function GameDetail() {
   const { slug } = Route.useParams();
   const { game, isLoading } = useGame(slug);
+  useEffect(() => {
+    if (game?.title) document.title = `${game.title} — Ayuniqa`;
+  }, [game?.title]);
   if (isLoading) {
     return (
       <SiteLayout>
