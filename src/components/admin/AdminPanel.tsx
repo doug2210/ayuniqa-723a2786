@@ -72,7 +72,6 @@ import { adminSignOut } from "./AdminGate";
 import { ChangePasswordDialog } from "./ChangePasswordDialog";
 import { GameAssetUploader } from "./GameAssetUploader";
 import { ContactInbox } from "./ContactInbox";
-import { EmailDeliveryLog } from "./EmailDeliveryLog";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -170,7 +169,6 @@ export function AdminPanel() {
           <TabsTrigger value="contact"><MessageSquare className="!size-3.5" /> Contact</TabsTrigger>
           <TabsTrigger value="social"><Share2 className="!size-3.5" /> Social</TabsTrigger>
           <TabsTrigger value="inbox"><InboxIcon className="!size-3.5" /> Inbox</TabsTrigger>
-          <TabsTrigger value="emails"><SendIcon className="!size-3.5" /> Emails</TabsTrigger>
         </TabsList>
 
         <TabsContent value="brand" className="mt-6">
@@ -221,10 +219,6 @@ export function AdminPanel() {
 
         <TabsContent value="inbox" className="mt-6">
           <ContactInbox />
-        </TabsContent>
-
-        <TabsContent value="emails" className="mt-6">
-          <EmailDeliveryLog />
         </TabsContent>
       </Tabs>
     </div>
