@@ -19,6 +19,7 @@ import {
   Image as ImageIcon,
   Inbox as InboxIcon,
   Send as SendIcon,
+  KeyRound,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,7 @@ import {
 import { DEFAULT_FLOATING_ITEMS, type FloatingItem } from "@/lib/site-config";
 import { ImageField } from "./ImageField";
 import { adminSignOut } from "./AdminGate";
+import { ChangePasswordDialog } from "./ChangePasswordDialog";
 import { GameAssetUploader } from "./GameAssetUploader";
 import { ContactInbox } from "./ContactInbox";
 import { EmailDeliveryLog } from "./EmailDeliveryLog";
