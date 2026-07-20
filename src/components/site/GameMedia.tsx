@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Play, X, Images } from "lucide-react";
+import { useRef, useState } from "react";
+import { Play, X, Images, Maximize } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogHeader } from "@/components/ui/dialog";
 import { getVideoEmbed } from "@/lib/game-media";
@@ -71,6 +71,14 @@ export function GameScreenshots({ shots, title }: { shots?: string[]; title: str
 
 export function PlayDemoButton({ url, title }: { url?: string | null; title: string }) {
   const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const handleFullscreen = () => {
+    const el = containerRef.current;
+    if (!el) return;
+    const anyEl = el as HTMLDivElement & { webkitRequestFullscreen?: () => Promise<void> };
+    if (anyEl.requestFullscreen) anyEl.requestFullscreen();
+    else if (anyEl.webkitRequestFullscreen) anyEl.webkitRequestFullscreen();
+  };
   if (!url) return null;
   return (
     <>
@@ -78,14 +86,22 @@ export function PlayDemoButton({ url, title }: { url?: string | null; title: str
         <Play className="!size-4" /> Play demo
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent hideCloseButton className="max-w-5xl border-border bg-card p-0 sm:w-auto w-[95vw]">
+        <DialogContent hideCloseButton className="w-[95vw] max-w-[min(1600px,95vw)] border-border bg-card p-0 sm:w-[95vw]">
           <DialogHeader className="flex flex-row items-center justify-between border-b border-border p-3">
             <DialogTitle>{title} — demo</DialogTitle>
-            <Button variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Close">
-              <X className="!size-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" onClick={handleFullscreen} aria-label="Fullscreen">
+                <Maximize className="!size-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Close">
+                <X className="!size-4" />
+              </Button>
+            </div>
           </DialogHeader>
-          <div className="aspect-[9/16] w-full bg-black sm:aspect-video">
+          <div
+            ref={containerRef}
+            className="aspect-[9/16] w-full bg-black sm:aspect-auto sm:h-[85vh]"
+          >
             <iframe
               src={url}
               title={`${title} demo`}
